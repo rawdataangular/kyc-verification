@@ -1,0 +1,22 @@
+# Python / BE
+BE/.venv/
+BE/__pycache__/
+BE/*.pyc
+BE/db.sqlite3
+BE/media/
+
+# Node / FE
+FE/node_modules/
+FE/.angular/
+FE/dist/
+FE/.vscode/
+FE/.DS_Store
+FE/npm-debug.log*
+FE/yarn-debug.log*
+FE/yarn-error.log*
+
+# General
+.vscode/
+.idea/
+*.log
+.DS_Store

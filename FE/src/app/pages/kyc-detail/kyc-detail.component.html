@@ -1,0 +1,116 @@
+<div class="container py-4">
+    <div class="d-flex align-items-center gap-3 mb-5">
+        <button routerLink="/" class="btn btn-link p-0 text-dark">
+            <i-lucide name="arrow-left" style="width: 24px;"></i-lucide>
+        </button>
+        <h1 class="h3 fw-bold mb-0">{{ isEditMode ? 'Edit Customer' : 'New Customer' }}</h1>
+    </div>
+
+    <div class="row g-4">
+        <!-- Left Column: Profile Info -->
+        <div class="col-lg-4">
+            <div class="card border-0 shadow-sm p-4 h-100">
+                <div class="text-center mb-4">
+                    <div class="rounded-circle bg-primary-subtle d-inline-flex align-items-center justify-content-center text-primary fw-bold mb-3"
+                        style="width: 80px; height: 80px; font-size: 2rem;">
+                        {{ (customer.name || 'U').substring(0, 1).toUpperCase() }}
+                    </div>
+                    <h2 class="h5 fw-bold mb-1">{{ customer.name || 'Full Name' }}</h2>
+                    <span class="badge badge-pill badge-verified" *ngIf="isEditMode">{{ customer.status }}</span>
+                </div>
+
+                <div class="space-y-4">
+                    <div class="mb-3">
+                        <label class="form-label small text-secondary fw-bold text-uppercase">Email Address</label>
+                        <input type="email" [(ngModel)]="customer.email" class="form-control"
+                            placeholder="john@example.com">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label small text-secondary fw-bold text-uppercase">Phone Number</label>
+                        <input type="text" [(ngModel)]="customer.phone" class="form-control"
+                            placeholder="+1 234 567 890">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label small text-secondary fw-bold text-uppercase">Country</label>
+                        <select [(ngModel)]="customer.country" class="form-select">
+                            <option>USA</option>
+                            <option>UK</option>
+                            <option>India</option>
+                            <option>UAE</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Column: Documents -->
+        <div class="col-lg-8">
+            @if (isEditMode) {
+            <div class="card border-0 shadow-sm overflow-hidden">
+                <div class="card-header bg-white py-3 border-bottom d-flex justify-content-between align-items-center">
+                    <h5 class="fw-bold mb-0">KYC Documents</h5>
+                    <span class="text-secondary small">Verification Required</span>
+                </div>
+                <div class="card-body p-0">
+                    <div class="list-group list-group-flush">
+                        @for (doc of documents; track doc.id) {
+                        <div class="list-group-item py-4 px-4 bg-transparent border-bottom">
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <div class="d-flex align-items-center">
+                                    <div class="p-2 rounded bg-light me-3">
+                                        <i-lucide name="file-text" style="width: 20px; color: #64748b;"></i-lucide>
+                                    </div>
+                                    <div>
+                                        <h6 class="fw-bold mb-0">{{ doc.name }}</h6>
+                                        <span class="text-secondary small">{{ doc.type }} Document</span>
+                                    </div>
+                                </div>
+                                <span class="badge badge-pill" [class]="getDocStatusClassName(doc.status)">{{ doc.status
+                                    }}</span>
+                            </div>
+
+                            <div class="d-flex gap-2">
+                                <div
+                                    class="flex-grow-1 p-3 rounded bg-light border border-dashed d-flex align-items-center justify-content-center cursor-pointer">
+                                    <div class="text-center">
+                                        <i-lucide name="upload" class="mb-1 text-secondary"
+                                            style="width: 16px;"></i-lucide>
+                                        <div class="small text-secondary">Drop PDF here</div>
+                                    </div>
+                                </div>
+                                <button (click)="verifyDoc(doc)"
+                                    [disabled]="doc.status === 'Verified' || doc.isVerifying"
+                                    class="btn btn-dark d-flex align-items-center justify-content-center gap-2 px-4"
+                                    style="min-width: 150px;">
+                                    @if (doc.isVerifying) {
+                                    <div class="spinner-border spinner-border-sm" role="status"></div>
+                                    <span>Verifying...</span>
+                                    } @else if (doc.status === 'Verified') {
+                                    <i-lucide name="check" style="width: 16px;"></i-lucide>
+                                    <span>Verified</span>
+                                    } @else {
+                                    <span>Verify Doc</span>
+                                    }
+                                </button>
+                            </div>
+                        </div>
+                        }
+                    </div>
+                </div>
+            </div>
+            } @else {
+            <div class="card border-0 shadow-sm p-5 text-center bg-white">
+                <i-lucide name="user-plus" class="text-secondary mb-3 mx-auto" style="width: 48px;"></i-lucide>
+                <h4 class="fw-bold">Create New Profile</h4>
+                <p class="text-secondary">Fill in the details on the left to initialize the KYC process for a new
+                    customer.</p>
+            </div>
+            }
+
+            <div class="d-flex justify-content-end gap-3 mt-4">
+                <button routerLink="/" class="btn btn-outline-secondary px-5">Cancel</button>
+                <button class="btn btn-primary px-5 fw-bold shadow-sm">Save Changes</button>
+            </div>
+        </div>
+    </div>
+</div>

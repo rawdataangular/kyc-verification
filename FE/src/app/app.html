@@ -1,0 +1,47 @@
+<div [class.dark]="themeService.isDark()">
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <div class="d-flex align-items-center mb-5 px-2">
+      <div class="bg-primary rounded-3 d-flex align-items-center justify-content-center text-white fw-bold shadow-lg"
+        style="width: 44px; height: 44px; font-size: 1.4rem;">
+        K
+      </div>
+      <div class="ms-3">
+        <div class="fw-bold fs-5 leading-tight text-dark">KYC Portal</div>
+        <div class="text-secondary small fw-medium">Enterprise Admin</div>
+      </div>
+    </div>
+
+    <nav class="nav flex-column mt-2">
+      <a routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}" class="nav-link">
+        <i-lucide name="layout-dashboard" class="me-3"></i-lucide>
+        <span>Dashboard</span>
+      </a>
+      <a routerLink="/kyc/new" routerLinkActive="active" class="nav-link">
+        <i-lucide name="user-plus" class="me-3"></i-lucide>
+        <span>Add Customer</span>
+      </a>
+      <a routerLink="/settings" routerLinkActive="active" class="nav-link">
+        <i-lucide name="settings" class="me-3"></i-lucide>
+        <span>Settings</span>
+      </a>
+    </nav>
+
+    <div class="mt-auto px-2">
+      <div class="card p-3 bg-light border-0 rounded-4">
+        <div class="d-flex align-items-center justify-content-between">
+          <div class="small fw-bold text-secondary">Dark Mode</div>
+          <div class="form-check form-switch p-0 m-0">
+            <input class="form-check-input ms-0" type="checkbox" role="switch" [checked]="themeService.isDark()"
+              (change)="themeService.toggleTheme()" style="width: 2.4rem; height: 1.2rem; cursor: pointer;">
+          </div>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- Main Content Area -->
+  <main class="main-content">
+    <router-outlet></router-outlet>
+  </main>
+</div>

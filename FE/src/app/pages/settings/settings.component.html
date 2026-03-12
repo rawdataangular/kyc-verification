@@ -1,0 +1,158 @@
+<div class="container py-4">
+    <header class="mb-5">
+        <h1 class="h2 fw-bold">System Settings</h1>
+        <p class="text-secondary">Global application configuration and master data management.</p>
+    </header>
+
+    <div class="row g-5">
+        <!-- General Settings -->
+        <div class="col-12">
+            <h5 class="fw-bold mb-4 d-flex align-items-center gap-2">
+                <i-lucide name="settings" style="width: 20px; color: #2563eb;"></i-lucide>
+                General Preferences
+            </h5>
+            <div class="row g-3">
+                <div class="col-md-6">
+                    <div class="card p-3 shadow-sm border-0 d-flex flex-row justify-content-between align-items-center">
+                        <div>
+                            <div class="fw-bold">Dark Mode</div>
+                            <div class="small text-secondary">Switch between light and dark themes.</div>
+                        </div>
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" type="checkbox" role="switch"
+                                [checked]="themeService.isDark()" (click)="themeService.toggleTheme()"
+                                style="width: 2.5rem; height: 1.25rem;">
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="card p-3 shadow-sm border-0 d-flex flex-row justify-content-between align-items-center">
+                        <div>
+                            <div class="fw-bold">Default Language</div>
+                            <div class="small text-secondary">System-wide display language.</div>
+                        </div>
+                        <select class="form-select w-auto border-0 fw-bold text-primary">
+                            <option>English (US)</option>
+                            <option>Hindi (IN)</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Master Data Management -->
+        <div class="col-12">
+            <h5 class="fw-bold mb-4 d-flex align-items-center gap-2">
+                <i-lucide name="file-text" style="width: 20px; color: #2563eb;"></i-lucide>
+                Master Data Management
+            </h5>
+            <div class="row g-4">
+                <div class="col-md-4">
+                    <div class="card border-0 shadow-sm overflow-hidden">
+                        <div class="card-header bg-light d-flex justify-content-between align-items-center py-3">
+                            <span class="fw-bold">Global Ports</span>
+                            <button class="btn btn-sm btn-link text-primary fw-bold text-decoration-none">+ ADD</button>
+                        </div>
+                        <ul class="list-group list-group-flush">
+                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                JNPT - Mumbai <i-lucide name="more-vertical"
+                                    style="width: 14px; opacity: 0.5;"></i-lucide>
+                            </li>
+                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                Port of Singapore <i-lucide name="more-vertical"
+                                    style="width: 14px; opacity: 0.5;"></i-lucide>
+                            </li>
+                            <li class="list-group-item d-flex justify-content-between align-items-center border-0">
+                                Jebel Ali - UAE <i-lucide name="more-vertical"
+                                    style="width: 14px; opacity: 0.5;"></i-lucide>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card border-0 shadow-sm overflow-hidden">
+                        <div class="card-header bg-light d-flex justify-content-between align-items-center py-3">
+                            <span class="fw-bold">Branch Offices</span>
+                            <button class="btn btn-sm btn-link text-primary fw-bold text-decoration-none">+ ADD</button>
+                        </div>
+                        <ul class="list-group list-group-flush">
+                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                New York HQ <i-lucide name="more-vertical"
+                                    style="width: 14px; opacity: 0.5;"></i-lucide>
+                            </li>
+                            <li class="list-group-item d-flex justify-content-between align-items-center border-0">
+                                London Regional <i-lucide name="more-vertical"
+                                    style="width: 14px; opacity: 0.5;"></i-lucide>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card border-0 shadow-sm overflow-hidden">
+                        <div class="card-header bg-light d-flex justify-content-between align-items-center py-3">
+                            <span class="fw-bold">Doc Types</span>
+                            <button class="btn btn-sm btn-link text-primary fw-bold text-decoration-none">+ ADD</button>
+                        </div>
+                        <ul class="list-group list-group-flush">
+                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                Tax Identification <i-lucide name="more-vertical"
+                                    style="width: 14px; opacity: 0.5;"></i-lucide>
+                            </li>
+                            <li class="list-group-item d-flex justify-content-between align-items-center border-0">
+                                Residence Permit <i-lucide name="more-vertical"
+                                    style="width: 14px; opacity: 0.5;"></i-lucide>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Mapping Matrix -->
+        <div class="col-12 mb-5">
+            <h5 class="fw-bold mb-4 d-flex align-items-center gap-2">
+                <i-lucide name="layout-dashboard" style="width: 20px; color: #2563eb;"></i-lucide>
+                Document Mapping Matrix
+            </h5>
+            <div class="card border-0 shadow-sm overflow-hidden">
+                <table class="table mb-0">
+                    <thead>
+                        <tr>
+                            <th class="ps-4">User Type</th>
+                            <th>Region</th>
+                            <th>Required Documents</th>
+                            <th class="text-end pe-4">Manage</th>
+                        </tr>
+                    </thead>
+                    <tbody class="border-0">
+                        <tr>
+                            <td class="ps-4 fw-bold">Individual</td>
+                            <td>India</td>
+                            <td>
+                                <span
+                                    class="badge bg-light text-primary border border-primary-subtle me-1">Aadhaar</span>
+                                <span class="badge bg-light text-primary border border-primary-subtle">PAN Card</span>
+                            </td>
+                            <td class="text-end pe-4">
+                                <button class="btn btn-sm btn-light text-primary fw-bold">Edit</button>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="ps-4 fw-bold">Corporate</td>
+                            <td>USA</td>
+                            <td>
+                                <span class="badge bg-light text-primary border border-primary-subtle me-1">W-9
+                                    Form</span>
+                                <span class="badge bg-light text-secondary border border-secondary-subtle">EIN
+                                    (Optional)</span>
+                            </td>
+                            <td class="text-end pe-4">
+                                <button class="btn btn-sm btn-light text-primary fw-bold">Edit</button>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,120 @@
+<div class="container-fluid">
+  <!-- Header -->
+  <div class="row align-items-center mb-5">
+    <div class="col">
+      <h1 class="h2 fw-bold text-dark mb-1">Customer Insights</h1>
+      <p class="text-secondary fw-medium mb-0">Overview of KYC verification status across global regions</p>
+    </div>
+    <div class="col-auto">
+      <button class="btn btn-primary d-flex align-items-center gap-2 shadow-sm" routerLink="/kyc/new">
+        <i-lucide name="user-plus" style="width: 20px;"></i-lucide>
+        <span>New Verification</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Stats Grid -->
+  <div class="row g-4 mb-5">
+    <div class="col-md-3">
+      <div class="card p-4 border-0">
+        <div class="text-secondary small fw-bold text-uppercase mb-2">Total Verified</div>
+        <div class="h3 fw-bold mb-0 text-success">1,284</div>
+      </div>
+    </div>
+    <div class="col-md-3">
+      <div class="card p-4 border-0">
+        <div class="text-secondary small fw-bold text-uppercase mb-2">Pending Review</div>
+        <div class="h3 fw-bold mb-0 text-warning">42</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Control Bar -->
+  <div class="card p-3 mb-4 border-0 bg-white">
+    <div class="row g-3 align-items-center">
+      <div class="col-lg-5">
+        <div class="input-group">
+          <span class="input-group-text bg-transparent border-0 pe-1">
+            <i-lucide name="search" style="width: 18px; color: #94a3b8;"></i-lucide>
+          </span>
+          <input type="text" class="form-control border-0 shadow-none bg-transparent"
+            placeholder="Global search for customers, IDs, or entities...">
+        </div>
+      </div>
+      <div class="col-lg-7">
+        <div class="d-flex gap-3 justify-content-end">
+          <select class="form-select border-0 bg-light rounded-3 fw-medium text-secondary" style="width: 180px;">
+            <option value="">Status: All</option>
+            <option>Verified</option>
+            <option>Pending</option>
+          </select>
+          <select class="form-select border-0 bg-light rounded-3 fw-medium text-secondary" style="width: 180px;">
+            <option value="">Region: Global</option>
+            <option>India</option>
+            <option>USA</option>
+          </select>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Data Table -->
+  <div class="card border-0 overflow-hidden">
+    <div class="table-responsive">
+      <table class="table align-middle">
+        <thead>
+          <tr>
+            <th>Customer Entity</th>
+            <th>Region</th>
+            <th>KYC Milestone</th>
+            <th>Progress Score</th>
+            <th class="text-end">Verification</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (customer of customers(); track customer.id) {
+          <tr>
+            <td>
+              <div class="d-flex align-items-center">
+                <div class="rounded-4 bg-primary-subtle d-flex align-items-center justify-content-center fw-bold me-3"
+                  style="width: 48px; height: 48px; color: #3b82f6;">
+                  {{ customer.name.substring(0, 1).toUpperCase() }}
+                </div>
+                <div>
+                  <div class="fw-bold text-dark">{{ customer.name }}</div>
+                  <div class="small text-secondary fw-medium">{{ customer.email }}</div>
+                </div>
+              </div>
+            </td>
+            <td>
+              <span class="text-dark fw-medium">{{ customer.country }}</span>
+            </td>
+            <td>
+              <span class="badge-pill" [class]="getStatusClassName(customer.status)">
+                <span class="dot" style="width: 6px; height: 6px; border-radius: 50%; background: currentColor;"></span>
+                {{ customer.status }}
+              </span>
+            </td>
+            <td style="width: 200px;">
+              <div class="d-flex align-items-center">
+                <div class="progress flex-grow-1 me-3" style="height: 6px;">
+                  <div class="progress-bar" role="progressbar"
+                    [style.width.%]="(customer.kycSummary.accepted / customer.kycSummary.required) * 100"></div>
+                </div>
+                <span class="small fw-bold text-dark">{{ customer.kycSummary.accepted }}/{{ customer.kycSummary.required
+                  }}</span>
+              </div>
+            </td>
+            <td class="text-end">
+              <button [routerLink]="['/kyc', customer.id]"
+                class="btn btn-outline-primary btn-sm fw-bold px-4 rounded-pill">
+                Analyze
+              </button>
+            </td>
+          </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>

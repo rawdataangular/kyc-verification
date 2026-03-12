@@ -1,0 +1,14 @@
+{
+    "GENERAL": {
+        "DASHBOARD": "Dashboard",
+        "SETTINGS": "Settings",
+        "THEME": "Theme",
+        "LANGUAGE": "Language"
+    },
+    "KYC": {
+        "STATUS": "Status",
+        "VERIFY": "Verify Document",
+        "VERIFIED": "Verified",
+        "PENDING": "Pending"
+    }
+}
