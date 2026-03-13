@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import CountryMaster, OfficeMaster
+from .models import CountryMaster, OfficeMaster, UserTypeMaster
 
 class CountryMasterSerializer(serializers.ModelSerializer):
     class Meta:
@@ -12,3 +12,8 @@ class OfficeMasterSerializer(serializers.ModelSerializer):
     class Meta:
         model = OfficeMaster
         fields = ['id', 'name', 'country', 'country_name', 'address', 'contact', 'email']
+
+class UserTypeMasterSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = UserTypeMaster
+        fields = '__all__'

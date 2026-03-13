@@ -43,3 +43,9 @@ export interface OfficeMaster {
     email: string;
 }
 
+export interface UserTypeMaster {
+    id?: number;
+    name: string;
+    description: string;
+}
+

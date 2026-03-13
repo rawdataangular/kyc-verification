@@ -1,7 +1,7 @@
 import { inject, Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { BehaviorSubject, Observable, tap } from 'rxjs';
-import { CountryMaster, OfficeMaster } from '../models/customer.model';
+import { CountryMaster, OfficeMaster, UserTypeMaster } from '../models/customer.model';
 
 @Injectable({
     providedIn: 'root'
@@ -16,9 +16,13 @@ export class MasterDataService {
     private officesSubject = new BehaviorSubject<OfficeMaster[]>([]);
     offices$ = this.officesSubject.asObservable();
 
+    private userTypesSubject = new BehaviorSubject<UserTypeMaster[]>([]);
+    userTypes$ = this.userTypesSubject.asObservable();
+
     constructor() {
         this.refreshCountries();
         this.refreshOffices();
+        this.refreshUserTypes();
     }
 
     // --- Countries ---
@@ -68,6 +72,31 @@ export class MasterDataService {
     deleteOffice(id: number): Observable<void> {
         return this.http.delete<void>(`${this.baseUrl}/offices/${id}/`).pipe(
             tap(() => this.refreshOffices())
+        );
+    }
+
+    // --- User Types ---
+    refreshUserTypes(): void {
+        this.http.get<UserTypeMaster[]>(`${this.baseUrl}/user-types/`).subscribe(data => {
+            this.userTypesSubject.next(data);
+        });
+    }
+
+    addUserType(userType: UserTypeMaster): Observable<UserTypeMaster> {
+        return this.http.post<UserTypeMaster>(`${this.baseUrl}/user-types/`, userType).pipe(
+            tap(() => this.refreshUserTypes())
+        );
+    }
+
+    updateUserType(userType: UserTypeMaster): Observable<UserTypeMaster> {
+        return this.http.put<UserTypeMaster>(`${this.baseUrl}/user-types/${userType.id}/`, userType).pipe(
+            tap(() => this.refreshUserTypes())
+        );
+    }
+
+    deleteUserType(id: number): Observable<void> {
+        return this.http.delete<void>(`${this.baseUrl}/user-types/${id}/`).pipe(
+            tap(() => this.refreshUserTypes())
         );
     }
 }
