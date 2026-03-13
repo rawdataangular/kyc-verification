@@ -33,3 +33,13 @@ export interface CountryMaster {
     dial_code: string;
 }
 
+export interface OfficeMaster {
+    id?: number;
+    name: string;
+    country: number;
+    country_name?: string;
+    address: string;
+    contact: string;
+    email: string;
+}
+

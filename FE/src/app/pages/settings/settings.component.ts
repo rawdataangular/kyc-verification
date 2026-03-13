@@ -20,7 +20,7 @@ import { LucideAngularModule } from 'lucide-angular';
              </a>
              <a routerLink="offices" routerLinkActive="active" class="nav-link-secondary">
                <i-lucide name="building-2" class="me-2" style="width: 16px;"></i-lucide>
-               Managing Offices
+               Office Master
              </a>
              <a routerLink="countries" routerLinkActive="active" class="nav-link-secondary">
                <i-lucide name="globe" class="me-2" style="width: 16px;"></i-lucide>
