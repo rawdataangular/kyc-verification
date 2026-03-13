@@ -1,6 +1,9 @@
 from rest_framework import viewsets
-from .models import CountryMaster, OfficeMaster, UserTypeMaster
-from .serializers import CountryMasterSerializer, OfficeMasterSerializer, UserTypeMasterSerializer
+from .models import CountryMaster, OfficeMaster, UserTypeMaster, DocumentTypeMaster
+from .serializers import (
+    CountryMasterSerializer, OfficeMasterSerializer, 
+    UserTypeMasterSerializer, DocumentTypeMasterSerializer
+)
 
 class CountryMasterViewSet(viewsets.ModelViewSet):
     queryset = CountryMaster.objects.all()
@@ -13,3 +16,7 @@ class OfficeMasterViewSet(viewsets.ModelViewSet):
 class UserTypeMasterViewSet(viewsets.ModelViewSet):
     queryset = UserTypeMaster.objects.all()
     serializer_class = UserTypeMasterSerializer
+
+class DocumentTypeMasterViewSet(viewsets.ModelViewSet):
+    queryset = DocumentTypeMaster.objects.all()
+    serializer_class = DocumentTypeMasterSerializer

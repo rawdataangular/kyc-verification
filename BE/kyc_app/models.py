@@ -11,8 +11,8 @@ def user_document_path(instance, filename):
         country_name = instance.user_detail.country.name.replace(' ', '_').lower()
         office_name = instance.user_detail.office.name.replace(' ', '_').lower()
         customer_name = instance.user_detail.name.replace(' ', '_').lower()
-        # Clean doc name for folder use
-        doc_name = instance.document_requirement.document_name.replace(' ', '_').lower()
+        # Clean doc name for folder use from the linked DocumentTypeMaster
+        doc_name = instance.document_requirement.document_type.name.replace(' ', '_').lower()
         
         # 'active' vs 'archive' folder
         status_folder = 'active' if instance.is_active else 'archive'
@@ -64,6 +64,18 @@ class UserTypeMaster(models.Model):
     def __str__(self):
         return self.name
 
+class DocumentTypeMaster(models.Model):
+    """New Table: Declaration of document names and descriptions"""
+    name = models.CharField(max_length=255, unique=True)
+    description = models.TextField(blank=True, null=True)
+
+    class Meta:
+        verbose_name = "Document Type"
+        verbose_name_plural = "Document Types"
+
+    def __str__(self):
+        return self.name
+
 class KYCStatusChoices(models.TextChoices):
     DRAFT = 'DRAFT', 'Draft'
     KYC_PENDING = 'KYC_PENDING', 'KYC Pending'
@@ -78,15 +90,16 @@ class DocumentRequirement(models.Model):
     user_type = models.ForeignKey(UserTypeMaster, on_delete=models.CASCADE, related_name='requirements')
     country = models.ForeignKey(CountryMaster, on_delete=models.CASCADE)
     office = models.ForeignKey(OfficeMaster, on_delete=models.CASCADE)
-    document_name = models.CharField(max_length=255, help_text="e.g. GST Number, PAN, VAT")
+    # Refactored to link to DocumentTypeMaster
+    document_type = models.ForeignKey(DocumentTypeMaster, on_delete=models.CASCADE, related_name='mapped_requirements', null=True, blank=True)
     is_mandatory = models.BooleanField(default=False)
 
     class Meta:
-        unique_together = ('user_type', 'country', 'office', 'document_name')
+        unique_together = ('user_type', 'country', 'office', 'document_type')
         indexes = [models.Index(fields=['user_type', 'country', 'office'])]
 
     def __str__(self):
-        return f"{self.user_type.name} - {self.document_name} ({self.country.name})"
+        return f"{self.user_type.name} - {self.document_type.name} ({self.country.name})"
 
 class UserDetail(models.Model):
     """Main User Profile: Mirrors logic sheet with details and stats"""
@@ -144,4 +157,4 @@ class UserDocument(models.Model):
         indexes = [models.Index(fields=['user_detail', 'is_active'])]
 
     def __str__(self):
-        return f"{self.user_detail.name} | {self.document_requirement.document_name}"
+        return f"{self.user_detail.name} | {self.document_requirement.document_type.name}"

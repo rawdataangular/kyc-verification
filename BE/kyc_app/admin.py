@@ -1,8 +1,13 @@
 from django.contrib import admin
 from .models import (
     MasterUser, CountryMaster, OfficeMaster, UserTypeMaster,
-    DocumentRequirement, UserDetail, UserDocument
+    DocumentTypeMaster, DocumentRequirement, UserDetail, UserDocument
 )
+
+@admin.register(DocumentTypeMaster)
+class DocumentTypeMasterAdmin(admin.ModelAdmin):
+    list_display = ('name', 'description')
+    search_fields = ('name',)
 
 @admin.register(UserTypeMaster)
 class UserTypeMasterAdmin(admin.ModelAdmin):
@@ -27,9 +32,9 @@ class OfficeMasterAdmin(admin.ModelAdmin):
 
 @admin.register(DocumentRequirement)
 class DocumentRequirementAdmin(admin.ModelAdmin):
-    list_display = ('document_name', 'user_type', 'country', 'office', 'is_mandatory')
+    list_display = ('document_type', 'user_type', 'country', 'office', 'is_mandatory')
     list_filter = ('user_type', 'country', 'office', 'is_mandatory')
-    search_fields = ('document_name',)
+    search_fields = ('document_type__name',)
 
 class UserDocumentInline(admin.TabularInline):
     model = UserDocument
@@ -63,4 +68,4 @@ class UserDetailAdmin(admin.ModelAdmin):
 class UserDocumentAdmin(admin.ModelAdmin):
     list_display = ('user_detail', 'document_requirement', 'is_active', 'uploaded_at')
     list_filter = ('is_active', 'uploaded_at')
-    search_fields = ('user_detail__name', 'document_requirement__document_name')
+    search_fields = ('user_detail__name', 'document_requirement__document_type__name')

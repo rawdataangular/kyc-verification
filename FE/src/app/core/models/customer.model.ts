@@ -49,3 +49,9 @@ export interface UserTypeMaster {
     description: string;
 }
 
+export interface DocumentTypeMaster {
+    id?: number;
+    name: string;
+    description: string;
+}
+

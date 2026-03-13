@@ -1,7 +1,7 @@
 import { inject, Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { BehaviorSubject, Observable, tap } from 'rxjs';
-import { CountryMaster, OfficeMaster, UserTypeMaster } from '../models/customer.model';
+import { CountryMaster, OfficeMaster, UserTypeMaster, DocumentTypeMaster } from '../models/customer.model';
 
 @Injectable({
     providedIn: 'root'
@@ -19,10 +19,14 @@ export class MasterDataService {
     private userTypesSubject = new BehaviorSubject<UserTypeMaster[]>([]);
     userTypes$ = this.userTypesSubject.asObservable();
 
+    private docTypesSubject = new BehaviorSubject<DocumentTypeMaster[]>([]);
+    docTypes$ = this.docTypesSubject.asObservable();
+
     constructor() {
         this.refreshCountries();
         this.refreshOffices();
         this.refreshUserTypes();
+        this.refreshDocTypes();
     }
 
     // --- Countries ---
@@ -97,6 +101,31 @@ export class MasterDataService {
     deleteUserType(id: number): Observable<void> {
         return this.http.delete<void>(`${this.baseUrl}/user-types/${id}/`).pipe(
             tap(() => this.refreshUserTypes())
+        );
+    }
+
+    // --- Document Types ---
+    refreshDocTypes(): void {
+        this.http.get<DocumentTypeMaster[]>(`${this.baseUrl}/document-types/`).subscribe(data => {
+            this.docTypesSubject.next(data);
+        });
+    }
+
+    addDocType(docType: DocumentTypeMaster): Observable<DocumentTypeMaster> {
+        return this.http.post<DocumentTypeMaster>(`${this.baseUrl}/document-types/`, docType).pipe(
+            tap(() => this.refreshDocTypes())
+        );
+    }
+
+    updateDocType(docType: DocumentTypeMaster): Observable<DocumentTypeMaster> {
+        return this.http.put<DocumentTypeMaster>(`${this.baseUrl}/document-types/${docType.id}/`, docType).pipe(
+            tap(() => this.refreshDocTypes())
+        );
+    }
+
+    deleteDocType(id: number): Observable<void> {
+        return this.http.delete<void>(`${this.baseUrl}/document-types/${id}/`).pipe(
+            tap(() => this.refreshDocTypes())
         );
     }
 }
