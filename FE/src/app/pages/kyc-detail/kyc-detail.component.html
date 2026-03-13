@@ -1,116 +1,231 @@
 <div class="container py-4">
+    <!-- Header with Back Button -->
     <div class="d-flex align-items-center gap-3 mb-5">
         <button routerLink="/" class="btn btn-link p-0 text-dark">
             <i-lucide name="arrow-left" style="width: 24px;"></i-lucide>
         </button>
-        <h1 class="h3 fw-bold mb-0">{{ isEditMode ? 'Edit Customer' : 'New Customer' }}</h1>
+        <h1 class="h3 fw-bold mb-0">{{ isEditMode ? 'Modify Profile' : 'Register New KYC Entity' }}</h1>
     </div>
 
     <div class="row g-4">
-        <!-- Left Column: Profile Info -->
+        <!-- Sidebar: Entity Profile -->
         <div class="col-lg-4">
-            <div class="card border-0 shadow-sm p-4 h-100">
+            <div class="card border-0 shadow-sm p-4 h-100 bg-white">
                 <div class="text-center mb-4">
                     <div class="rounded-circle bg-primary-subtle d-inline-flex align-items-center justify-content-center text-primary fw-bold mb-3"
                         style="width: 80px; height: 80px; font-size: 2rem;">
-                        {{ (customer.name || 'U').substring(0, 1).toUpperCase() }}
+                        {{ (user.name || 'E').substring(0, 1).toUpperCase() }}
                     </div>
-                    <h2 class="h5 fw-bold mb-1">{{ customer.name || 'Full Name' }}</h2>
-                    <span class="badge badge-pill badge-verified" *ngIf="isEditMode">{{ customer.status }}</span>
+                    <h2 class="h5 fw-bold mb-1">{{ user.name || 'Entity Name' }}</h2>
+                    <span
+                        class="badge rounded-pill bg-light text-secondary border border-secondary-subtle px-3 py-1 fw-bold small text-uppercase">
+                        {{ user.status }}
+                    </span>
                 </div>
 
-                <div class="space-y-4">
+                <div class="entity-form">
                     <div class="mb-3">
-                        <label class="form-label small text-secondary fw-bold text-uppercase">Email Address</label>
-                        <input type="email" [(ngModel)]="customer.email" class="form-control"
-                            placeholder="john@example.com">
+                        <label class="form-label small text-secondary fw-bold text-uppercase">Full Display Name <span
+                                class="text-danger">*</span></label>
+                        <input type="text" [(ngModel)]="user.name" class="form-control"
+                            placeholder="Company or Individual Name">
                     </div>
+
                     <div class="mb-3">
-                        <label class="form-label small text-secondary fw-bold text-uppercase">Phone Number</label>
-                        <input type="text" [(ngModel)]="customer.phone" class="form-control"
-                            placeholder="+1 234 567 890">
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label small text-secondary fw-bold text-uppercase">Country</label>
-                        <select [(ngModel)]="customer.country" class="form-select">
-                            <option>USA</option>
-                            <option>UK</option>
-                            <option>India</option>
-                            <option>UAE</option>
+                        <label class="form-label small text-secondary fw-bold text-uppercase">Classification <span
+                                class="text-danger">*</span></label>
+                        <select [(ngModel)]="user.user_type" class="form-select" (change)="onProfileChange()">
+                            <option [value]="0">Select Type...</option>
+                            @for (t of userTypes(); track t.id) {
+                            <option [value]="t.id">{{ t.name }}</option>
+                            }
                         </select>
+                    </div>
+
+                    <div class="row mb-3">
+                        <div class="col-6">
+                            <label class="form-label small text-secondary fw-bold text-uppercase">Country <span
+                                    class="text-danger">*</span></label>
+                            <select [(ngModel)]="user.country" class="form-select" (change)="onProfileChange()">
+                                <option [value]="0">Select...</option>
+                                @for (c of countries(); track c.id) {
+                                <option [value]="c.id">{{ c.name }}</option>
+                                }
+                            </select>
+                        </div>
+                        <div class="col-6">
+                            <label class="form-label small text-secondary fw-bold text-uppercase">Office <span
+                                    class="text-danger">*</span></label>
+                            <select [(ngModel)]="user.office" class="form-select" (change)="onProfileChange()">
+                                <option [value]="0">Select...</option>
+                                @for (o of offices(); track o.id) {
+                                @if(o.country == user.country || user.country == 0) {
+                                <option [value]="o.id">{{ o.name }}</option>
+                                }
+                                }
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="row mb-3">
+                        <div class="col-6">
+                            <label class="form-label small text-secondary fw-bold text-uppercase">State</label>
+                            <input type="text" [(ngModel)]="user.state" class="form-control" placeholder="Optional">
+                        </div>
+                        <div class="col-6">
+                            <label class="form-label small text-secondary fw-bold text-uppercase">City</label>
+                            <input type="text" [(ngModel)]="user.city" class="form-control" placeholder="Optional">
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label small text-secondary fw-bold text-uppercase">Registered Address</label>
+                        <textarea [(ngModel)]="user.full_address" class="form-control" rows="3"
+                            placeholder="Primary Address line..."></textarea>
                     </div>
                 </div>
             </div>
         </div>
 
-        <!-- Right Column: Documents -->
+        <!-- Main Content Area -->
         <div class="col-lg-8">
-            @if (isEditMode) {
-            <div class="card border-0 shadow-sm overflow-hidden">
+            <!-- Information Tabs (Simulated with sections) -->
+            <div class="card border-0 shadow-sm bg-white mb-4">
+                <div class="card-header bg-white py-3 border-bottom">
+                    <h5 class="fw-bold mb-0">Entity Details</h5>
+                </div>
+                <div class="card-body">
+                    <!-- Contact Section -->
+                    <h6 class="text-uppercase small fw-bold text-primary mb-3">Primary Contacts</h6>
+                    <div class="row g-3 mb-4">
+                        <div class="col-md-6">
+                            <label class="form-label small text-secondary fw-bold">Primary Contact Name</label>
+                            <input type="text" [(ngModel)]="user.person1_name" class="form-control"
+                                placeholder="Contact Person 1">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label small text-secondary fw-bold">Primary Contact Phone</label>
+                            <input type="text" [(ngModel)]="user.person1_phone" class="form-control"
+                                placeholder="Phone 1">
+                        </div>
+                    </div>
+
+                    <!-- Banking Section (Optional) -->
+                    <div class="pt-3 border-top mt-4">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <h6 class="text-uppercase small fw-bold text-primary mb-0">Banking Specification</h6>
+                            <span class="badge bg-light text-secondary border fw-bold px-2 py-1 small">OPTIONAL</span>
+                        </div>
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label class="form-label small text-secondary fw-bold">Bank Name</label>
+                                <input type="text" [(ngModel)]="user.bank_name" class="form-control shadow-none">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label small text-secondary fw-bold">Account Holder</label>
+                                <input type="text" [(ngModel)]="user.account_holder_name"
+                                    class="form-control shadow-none">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label small text-secondary fw-bold">Account Number</label>
+                                <input type="text" [(ngModel)]="user.account_number" class="form-control shadow-none">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label small text-secondary fw-bold">IFSC / SWIFT Code</label>
+                                <input type="text" [(ngModel)]="user.ifsc_swift" class="form-control shadow-none">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Mandatory Documents Section -->
+            @if (user.user_type && user.country && user.office) {
+            <div class="card border-0 shadow-sm bg-white overflow-hidden mb-4">
                 <div class="card-header bg-white py-3 border-bottom d-flex justify-content-between align-items-center">
-                    <h5 class="fw-bold mb-0">KYC Documents</h5>
-                    <span class="text-secondary small">Verification Required</span>
+                    <h5 class="fw-bold mb-0">Document Fulfillment</h5>
+                    <span class="text-secondary small">Based on {{ user.user_type_name }} Profile</span>
                 </div>
                 <div class="card-body p-0">
                     <div class="list-group list-group-flush">
-                        @for (doc of documents; track doc.id) {
-                        <div class="list-group-item py-4 px-4 bg-transparent border-bottom">
-                            <div class="d-flex justify-content-between align-items-center mb-3">
+                        @for (req of requirements(); track req.id) {
+                        <div class="list-group-item py-4 px-4 bg-transparent">
+                            <div class="d-flex justify-content-between align-items-start mb-3">
                                 <div class="d-flex align-items-center">
                                     <div class="p-2 rounded bg-light me-3">
-                                        <i-lucide name="file-text" style="width: 20px; color: #64748b;"></i-lucide>
+                                        <i-lucide name="file-text" style="width: 20px; color: #2563eb;"></i-lucide>
                                     </div>
                                     <div>
-                                        <h6 class="fw-bold mb-0">{{ doc.name }}</h6>
-                                        <span class="text-secondary small">{{ doc.type }} Document</span>
+                                        <h6 class="fw-bold mb-0">{{ req.document_type_name }}</h6>
+                                        <span class="text-secondary small">{{ req.is_mandatory ? 'Mandatory' :
+                                            'Optional' }} Requirement</span>
                                     </div>
                                 </div>
-                                <span class="badge badge-pill" [class]="getDocStatusClassName(doc.status)">{{ doc.status
-                                    }}</span>
+                                @if (isDocUploaded(req.id!)) {
+                                <span
+                                    class="badge rounded-pill bg-success-subtle text-success border border-success-subtle fw-bold px-3 py-1">UPLOADED</span>
+                                } @else {
+                                <span
+                                    class="badge rounded-pill bg-warning-subtle text-warning border border-warning-subtle fw-bold px-3 py-1">MISSING</span>
+                                }
                             </div>
 
-                            <div class="d-flex gap-2">
+                            <div class="upload-zone position-relative">
+                                <input type="file"
+                                    class="position-absolute top-0 start-0 opacity-0 w-100 h-100 cursor-pointer"
+                                    (change)="handleFileInput($event, req.id!)" [disabled]="!user.id">
                                 <div
-                                    class="flex-grow-1 p-3 rounded bg-light border border-dashed d-flex align-items-center justify-content-center cursor-pointer">
-                                    <div class="text-center">
+                                    class="p-3 rounded bg-light border border-dashed d-flex align-items-center justify-content-center">
+                                    <div class="text-center py-2">
                                         <i-lucide name="upload" class="mb-1 text-secondary"
-                                            style="width: 16px;"></i-lucide>
-                                        <div class="small text-secondary">Drop PDF here</div>
+                                            style="width: 20px;"></i-lucide>
+                                        <div class="small fw-semibold text-secondary">Click or Drag PDF to upload</div>
                                     </div>
                                 </div>
-                                <button (click)="verifyDoc(doc)"
-                                    [disabled]="doc.status === 'Verified' || doc.isVerifying"
-                                    class="btn btn-dark d-flex align-items-center justify-content-center gap-2 px-4"
-                                    style="min-width: 150px;">
-                                    @if (doc.isVerifying) {
-                                    <div class="spinner-border spinner-border-sm" role="status"></div>
-                                    <span>Verifying...</span>
-                                    } @else if (doc.status === 'Verified') {
-                                    <i-lucide name="check" style="width: 16px;"></i-lucide>
-                                    <span>Verified</span>
-                                    } @else {
-                                    <span>Verify Doc</span>
-                                    }
-                                </button>
                             </div>
+                        </div>
+                        } @empty {
+                        <div class="text-center py-5 text-secondary">
+                            <i-lucide name="inbox" class="mb-2 opacity-25" style="width: 48px;"></i-lucide>
+                            <p class="mb-0">No document requirements found for this specific profile context.</p>
                         </div>
                         }
                     </div>
                 </div>
             </div>
             } @else {
-            <div class="card border-0 shadow-sm p-5 text-center bg-white">
-                <i-lucide name="user-plus" class="text-secondary mb-3 mx-auto" style="width: 48px;"></i-lucide>
-                <h4 class="fw-bold">Create New Profile</h4>
-                <p class="text-secondary">Fill in the details on the left to initialize the KYC process for a new
-                    customer.</p>
+            <div class="card border-0 shadow-sm p-5 text-center bg-white opacity-75">
+                <i-lucide name="settings" class="text-secondary mb-3 mx-auto" style="width: 48px;"></i-lucide>
+                <h5 class="fw-bold">Dynamic Checklist</h5>
+                <p class="text-secondary mb-0">Select a Classification, Country, and Office to generate the document
+                    requirement checklist.</p>
             </div>
             }
 
-            <div class="d-flex justify-content-end gap-3 mt-4">
-                <button routerLink="/" class="btn btn-outline-secondary px-5">Cancel</button>
-                <button class="btn btn-primary px-5 fw-bold shadow-sm">Save Changes</button>
+            <!-- Bottom Actions -->
+            <div class="d-flex justify-content-end gap-3 mt-5 pb-5">
+                <button routerLink="/" class="btn btn-outline-secondary px-5 fw-bold rounded-3">Discard</button>
+                <button (click)="saveProfile()" class="btn btn-primary px-5 fw-bold rounded-3 shadow-sm">
+                    {{ isEditMode ? 'Update Entity' : 'Complete Registration' }}
+                </button>
             </div>
         </div>
     </div>
 </div>
+
+<style>
+    .cursor-pointer {
+        cursor: pointer;
+    }
+
+    .border-dashed {
+        border-style: dashed !important;
+        border-width: 2px !important;
+    }
+
+    .form-control:focus,
+    .form-select:focus {
+        border-color: #2563eb;
+        box-shadow: 0 0 0 0.25rem rgba(37, 99, 235, 0.1);
+    }
+</style>

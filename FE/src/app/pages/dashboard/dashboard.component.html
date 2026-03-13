@@ -65,10 +65,10 @@
         <thead>
           <tr>
             <th>Customer Entity</th>
-            <th>Region</th>
-            <th>KYC Milestone</th>
-            <th>Progress Score</th>
-            <th class="text-end">Verification</th>
+            <th>Country</th>
+            <th>Status</th>
+            <th>Office</th>
+            <th class="text-end">Action</th>
           </tr>
         </thead>
         <tbody>
@@ -82,12 +82,12 @@
                 </div>
                 <div>
                   <div class="fw-bold text-dark">{{ customer.name }}</div>
-                  <div class="small text-secondary fw-medium">{{ customer.email }}</div>
+                  <div class="small text-secondary fw-medium">{{ customer.user_type_name }}</div>
                 </div>
               </div>
             </td>
             <td>
-              <span class="text-dark fw-medium">{{ customer.country }}</span>
+              <span class="text-dark fw-medium">{{ customer.country_name }}</span>
             </td>
             <td>
               <span class="badge-pill" [class]="getStatusClassName(customer.status)">
@@ -95,20 +95,13 @@
                 {{ customer.status }}
               </span>
             </td>
-            <td style="width: 200px;">
-              <div class="d-flex align-items-center">
-                <div class="progress flex-grow-1 me-3" style="height: 6px;">
-                  <div class="progress-bar" role="progressbar"
-                    [style.width.%]="(customer.kycSummary.accepted / customer.kycSummary.required) * 100"></div>
-                </div>
-                <span class="small fw-bold text-dark">{{ customer.kycSummary.accepted }}/{{ customer.kycSummary.required
-                  }}</span>
-              </div>
+            <td>
+              <span class="text-secondary small fw-medium">{{ customer.office_name }}</span>
             </td>
             <td class="text-end">
               <button [routerLink]="['/kyc', customer.id]"
                 class="btn btn-outline-primary btn-sm fw-bold px-4 rounded-pill">
-                Analyze
+                Manage
               </button>
             </td>
           </tr>

@@ -104,11 +104,11 @@ class DocumentRequirement(models.Model):
 class UserDetail(models.Model):
     """Main User Profile: Mirrors logic sheet with details and stats"""
     # Basic Info
-    master_user = models.OneToOneField(MasterUser, on_delete=models.CASCADE, related_name='profile')
+    master_user = models.OneToOneField(MasterUser, on_delete=models.CASCADE, related_name='profile', null=True, blank=True)
     name = models.CharField(max_length=255, db_index=True)
     country = models.ForeignKey(CountryMaster, on_delete=models.PROTECT)
-    state = models.CharField(max_length=100)
-    city = models.CharField(max_length=100)
+    state = models.CharField(max_length=100, blank=True, null=True)
+    city = models.CharField(max_length=100, blank=True, null=True)
     office = models.ForeignKey(OfficeMaster, on_delete=models.PROTECT)
     user_type = models.ForeignKey(UserTypeMaster, on_delete=models.PROTECT, related_name='profiles')
     remarks = models.TextField(blank=True, null=True)
@@ -129,10 +129,10 @@ class UserDetail(models.Model):
     full_address = models.TextField()
 
     # Banking Sections
-    bank_name = models.CharField(max_length=255)
-    account_holder_name = models.CharField(max_length=255)
-    account_number = models.CharField(max_length=50)
-    ifsc_swift = models.CharField(max_length=20)
+    bank_name = models.CharField(max_length=255, blank=True, null=True)
+    account_holder_name = models.CharField(max_length=255, blank=True, null=True)
+    account_number = models.CharField(max_length=50, blank=True, null=True)
+    ifsc_swift = models.CharField(max_length=20, blank=True, null=True)
 
     # Auditing
     updated_at = models.DateTimeField(auto_now=True)

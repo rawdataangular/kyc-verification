@@ -4,7 +4,7 @@ import { RouterModule } from '@angular/router';
 import { LucideAngularModule } from 'lucide-angular';
 import { CustomerService } from '../../core/services/customer.service';
 import { ThemeService } from '../../core/services/theme.service';
-import { KycStatus, Customer } from '../../core/models/customer.model';
+import { UserDetail } from '../../core/models/customer.model';
 
 @Component({
     selector: 'app-dashboard',
@@ -16,7 +16,7 @@ export class DashboardComponent {
     customerService = inject(CustomerService);
     themeService = inject(ThemeService);
 
-    customers = signal<Customer[]>([]);
+    customers = signal<UserDetail[]>([]);
 
     constructor() {
         this.customerService.customers$.subscribe(data => {
@@ -24,7 +24,7 @@ export class DashboardComponent {
         });
     }
 
-    getStatusClassName(status: KycStatus): string {
+    getStatusClassName(status: string): string {
         switch (status) {
             case 'Verified':
                 return 'badge-verified';

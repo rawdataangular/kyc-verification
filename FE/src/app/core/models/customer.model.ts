@@ -55,3 +55,41 @@ export interface DocumentTypeMaster {
     description: string;
 }
 
+export interface DocumentRequirement {
+    id?: number;
+    user_type: number;
+    user_type_name?: string;
+    country: number;
+    country_name?: string;
+    office: number;
+    office_name?: string;
+    document_type: number;
+    document_type_name?: string;
+    is_mandatory: boolean;
+}
+
+export interface UserDetail {
+    id?: number;
+    name: string;
+    country: number;
+    country_name?: string;
+    office: number;
+    office_name?: string;
+    user_type: number;
+    user_type_name?: string;
+    status: string;
+    state?: string;
+    city?: string;
+    remarks?: string;
+    person1_name: string;
+    person1_phone: string;
+    person2_name?: string;
+    person2_phone?: string;
+    full_address: string;
+    bank_name?: string;
+    account_holder_name?: string;
+    account_number?: string;
+    ifsc_swift?: string;
+}
+
+

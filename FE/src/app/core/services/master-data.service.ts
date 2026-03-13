@@ -1,7 +1,7 @@
 import { inject, Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { BehaviorSubject, Observable, tap } from 'rxjs';
-import { CountryMaster, OfficeMaster, UserTypeMaster, DocumentTypeMaster } from '../models/customer.model';
+import { CountryMaster, OfficeMaster, UserTypeMaster, DocumentTypeMaster, DocumentRequirement } from '../models/customer.model';
 
 @Injectable({
     providedIn: 'root'
@@ -22,11 +22,15 @@ export class MasterDataService {
     private docTypesSubject = new BehaviorSubject<DocumentTypeMaster[]>([]);
     docTypes$ = this.docTypesSubject.asObservable();
 
+    private matrixSubject = new BehaviorSubject<DocumentRequirement[]>([]);
+    matrix$ = this.matrixSubject.asObservable();
+
     constructor() {
         this.refreshCountries();
         this.refreshOffices();
         this.refreshUserTypes();
         this.refreshDocTypes();
+        this.refreshMatrix();
     }
 
     // --- Countries ---
@@ -127,5 +131,50 @@ export class MasterDataService {
         return this.http.delete<void>(`${this.baseUrl}/document-types/${id}/`).pipe(
             tap(() => this.refreshDocTypes())
         );
+    }
+
+    // --- Mapping Matrix ---
+    refreshMatrix(): void {
+        this.http.get<DocumentRequirement[]>(`${this.baseUrl}/requirement-matrix/`).subscribe(data => {
+            this.matrixSubject.next(data);
+        });
+    }
+
+    getRequirements(userTypeId: number, countryId: number, officeId: number): Observable<DocumentRequirement[]> {
+        return this.http.get<DocumentRequirement[]>(`${this.baseUrl}/requirement-matrix/?user_type=${userTypeId}&country=${countryId}&office=${officeId}`);
+    }
+
+    addMapping(mapping: DocumentRequirement): Observable<DocumentRequirement> {
+        return this.http.post<DocumentRequirement>(`${this.baseUrl}/requirement-matrix/`, mapping).pipe(
+            tap(() => this.refreshMatrix())
+        );
+    }
+
+    updateMapping(mapping: DocumentRequirement): Observable<DocumentRequirement> {
+        return this.http.put<DocumentRequirement>(`${this.baseUrl}/requirement-matrix/${mapping.id}/`, mapping).pipe(
+            tap(() => this.refreshMatrix())
+        );
+    }
+
+    deleteMapping(id: number): Observable<void> {
+        return this.http.delete<void>(`${this.baseUrl}/requirement-matrix/${id}/`).pipe(
+            tap(() => this.refreshMatrix())
+        );
+    }
+
+    // --- User Details & KYC ---
+    saveUserDetail(userDetail: any): Observable<any> {
+        if (userDetail.id) {
+            return this.http.put(`${this.baseUrl}/user-details/${userDetail.id}/`, userDetail);
+        }
+        return this.http.post(`${this.baseUrl}/user-details/`, userDetail);
+    }
+
+    getUserDetailById(id: number): Observable<any> {
+        return this.http.get(`${this.baseUrl}/user-details/${id}/`);
+    }
+
+    uploadUserDocument(formData: FormData): Observable<any> {
+        return this.http.post(`${this.baseUrl}/user-documents/`, formData);
     }
 }
