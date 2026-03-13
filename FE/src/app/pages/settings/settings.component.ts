@@ -4,10 +4,10 @@ import { RouterModule, RouterOutlet } from '@angular/router';
 import { LucideAngularModule } from 'lucide-angular';
 
 @Component({
-    selector: 'app-settings',
-    standalone: true,
-    imports: [CommonModule, RouterModule, RouterOutlet, LucideAngularModule],
-    template: `
+  selector: 'app-settings',
+  standalone: true,
+  imports: [CommonModule, RouterModule, RouterOutlet, LucideAngularModule],
+  template: `
     <div class="row g-4 h-100">
       <!-- Secondary Settings Sidebar -->
       <div class="col-lg-3">
@@ -24,7 +24,7 @@ import { LucideAngularModule } from 'lucide-angular';
              </a>
              <a routerLink="countries" routerLinkActive="active" class="nav-link-secondary">
                <i-lucide name="globe" class="me-2" style="width: 16px;"></i-lucide>
-               Global Regions
+               Country Master
              </a>
              <a routerLink="doc-types" routerLinkActive="active" class="nav-link-secondary">
                <i-lucide name="file-text" class="me-2" style="width: 16px;"></i-lucide>

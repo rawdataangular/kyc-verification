@@ -1,7 +1,7 @@
 import { ApplicationConfig, provideZoneChangeDetection, importProvidersFrom } from '@angular/core';
 import { provideRouter } from '@angular/router';
 import { provideHttpClient, HttpClient } from '@angular/common/http';
-import { LucideAngularModule, Search, LayoutDashboard, UserPlus, Settings, Moon, Sun, ArrowLeft, User, FileText, File, Upload, Check, MoreVertical, Building2, Globe, Users, GitPullRequest, MapPin, Plus } from 'lucide-angular';
+import { LucideAngularModule, Search, LayoutDashboard, UserPlus, Settings, Moon, Sun, ArrowLeft, User, FileText, File, Upload, Check, MoreVertical, Building2, Globe, Users, GitPullRequest, MapPin, Plus, Trash2, Edit2, Download, Inbox } from 'lucide-angular';
 import { TranslateModule, TranslateLoader } from '@ngx-translate/core';
 import { Observable } from 'rxjs';
 
@@ -25,7 +25,7 @@ export const appConfig: ApplicationConfig = {
     provideHttpClient(),
     importProvidersFrom(
       LucideAngularModule.pick({
-        Search, LayoutDashboard, UserPlus, Settings, Moon, Sun, ArrowLeft, User, FileText, File, Upload, Check, MoreVertical, Building2, Globe, Users, GitPullRequest, MapPin, Plus
+        Search, LayoutDashboard, UserPlus, Settings, Moon, Sun, ArrowLeft, User, FileText, File, Upload, Check, MoreVertical, Building2, Globe, Users, GitPullRequest, MapPin, Plus, Trash2, Edit2, Download, Inbox
       }),
       TranslateModule.forRoot({
         defaultLanguage: 'en',
