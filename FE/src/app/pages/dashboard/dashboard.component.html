@@ -68,6 +68,7 @@
             <th>Country</th>
             <th>Status</th>
             <th>Office</th>
+            <th>Documents</th>
             <th class="text-end">Action</th>
           </tr>
         </thead>
@@ -78,7 +79,7 @@
               <div class="d-flex align-items-center">
                 <div class="rounded-4 bg-primary-subtle d-flex align-items-center justify-content-center fw-bold me-3"
                   style="width: 48px; height: 48px; color: #3b82f6;">
-                  {{ customer.name.substring(0, 1).toUpperCase() }}
+                  {{ (customer.name || '').substring(0, 1).toUpperCase() }}
                 </div>
                 <div>
                   <div class="fw-bold text-dark">{{ customer.name }}</div>
@@ -97,6 +98,24 @@
             </td>
             <td>
               <span class="text-secondary small fw-medium">{{ customer.office_name }}</span>
+            </td>
+            <td>
+              @if (customer.kyc_summary) {
+              <div class="d-flex align-items-center">
+                <div class="progress flex-grow-1 me-2" style="height: 6px; min-width: 80px;">
+                  <div class="progress-bar bg-success" role="progressbar"
+                    [style.width.%]="(customer.kyc_summary.accepted / (customer.kyc_summary.required || 1)) * 100">
+                  </div>
+                </div>
+                <span class="small fw-bold text-dark">{{ customer.kyc_summary.accepted }}/{{
+                  customer.kyc_summary.required }}</span>
+              </div>
+              @if (customer.kyc_summary.pending > 0) {
+              <div class="small text-warning fw-medium" style="font-size: 0.7rem;">
+                {{ customer.kyc_summary.pending }} pending review
+              </div>
+              }
+              }
             </td>
             <td class="text-end">
               <button [routerLink]="['/kyc', customer.id]"

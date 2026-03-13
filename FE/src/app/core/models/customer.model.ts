@@ -68,6 +68,22 @@ export interface DocumentRequirement {
     is_mandatory: boolean;
 }
 
+export interface UserDocument {
+    id?: number;
+    user_detail: number;
+    document_requirement: number;
+    document_type_name?: string;
+    is_mandatory?: boolean;
+    document_value?: string;
+    file_upload: string;
+    is_active: boolean;
+    uploaded_at: string;
+    verification_status: 'PENDING' | 'VERIFIED' | 'REJECTED';
+    verification_method?: 'MANUAL' | 'PORTAL';
+    is_verified: boolean;
+    verified_at?: string;
+}
+
 export interface UserDetail {
     id?: number;
     name: string;
@@ -90,6 +106,13 @@ export interface UserDetail {
     account_holder_name?: string;
     account_number?: string;
     ifsc_swift?: string;
+    documents?: UserDocument[];
+    kyc_summary?: {
+        required: number;
+        accepted: number;
+        rejected: number;
+        pending: number;
+    };
 }
 
 

@@ -4,7 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, RouterModule, Router } from '@angular/router';
 import { LucideAngularModule } from 'lucide-angular';
 import { MasterDataService } from '../../core/services/master-data.service';
-import { UserDetail, CountryMaster, OfficeMaster, UserTypeMaster, DocumentRequirement } from '../../core/models/customer.model';
+import { UserDetail, CountryMaster, OfficeMaster, UserTypeMaster, DocumentRequirement, UserDocument } from '../../core/models/customer.model';
 
 @Component({
     selector: 'app-kyc-detail',
@@ -33,11 +33,9 @@ export class KycDetailComponent implements OnInit {
         status: 'DRAFT',
         person1_name: '',
         person1_phone: '',
-        full_address: ''
+        full_address: '',
+        documents: []
     };
-
-    // Tracking uploaded files status (mock for UI)
-    uploadedDocs = new Set<number>();
 
     ngOnInit() {
         // Load Master Data
@@ -48,7 +46,14 @@ export class KycDetailComponent implements OnInit {
         const id = this.route.snapshot.paramMap.get('id');
         if (id && id !== 'new') {
             this.isEditMode = true;
-            this.masterDataService.getUserDetailById(+id).subscribe(data => {
+            this.refreshUserData(+id);
+        }
+    }
+
+    refreshUserData(id?: number) {
+        const targetId = id || this.user.id;
+        if (targetId) {
+            this.masterDataService.getUserDetailById(targetId).subscribe(data => {
                 this.user = data;
                 this.fetchRequirements();
             });
@@ -99,15 +104,34 @@ export class KycDetailComponent implements OnInit {
             formData.append('file_upload', file);
 
             this.masterDataService.uploadUserDocument(formData).subscribe(() => {
-                this.uploadedDocs.add(requirementId);
                 alert('Document uploaded!');
+                this.refreshUserData();
             });
         } else if (!this.user.id) {
             alert('Please save the profile first before uploading documents.');
         }
     }
 
+    getUploadedDoc(requirementId: number): UserDocument | undefined {
+        return this.user.documents?.find(d => d.document_requirement === requirementId && d.is_active);
+    }
+
     isDocUploaded(requirementId: number): boolean {
-        return this.uploadedDocs.has(requirementId);
+        return !!this.getUploadedDoc(requirementId);
+    }
+
+    verifyDoc(requirementId: number, status: 'VERIFIED' | 'REJECTED', method: string) {
+        const doc = this.getUploadedDoc(requirementId);
+        if (doc && doc.id) {
+            const updateData = {
+                verification_status: status,
+                verification_method: method as 'MANUAL' | 'PORTAL',
+                is_verified: status === 'VERIFIED'
+            };
+            this.masterDataService.verifyUserDocument(doc.id, updateData).subscribe(() => {
+                alert(`Document ${status.toLowerCase()} via ${method.toLowerCase()}!`);
+                this.refreshUserData();
+            });
+        }
     }
 }

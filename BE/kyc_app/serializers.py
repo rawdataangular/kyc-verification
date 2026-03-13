@@ -43,12 +43,44 @@ class UserDetailSerializer(serializers.ModelSerializer):
     country_name = serializers.CharField(source='country.name', read_only=True)
     office_name = serializers.CharField(source='office.name', read_only=True)
     user_type_name = serializers.CharField(source='user_type.name', read_only=True)
+    kyc_summary = serializers.SerializerMethodField()
 
     class Meta:
         model = UserDetail
         fields = '__all__'
 
+    def get_kyc_summary(self, obj):
+        try:
+            from .models import DocumentRequirement
+            required_count = DocumentRequirement.objects.filter(
+                user_type=obj.user_type,
+                country=obj.country,
+                office=obj.office
+            ).count()
+            
+            uploaded_docs = obj.documents.filter(is_active=True)
+            accepted_count = uploaded_docs.filter(verification_status='VERIFIED').count()
+            rejected_count = uploaded_docs.filter(verification_status='REJECTED').count()
+            pending_count = uploaded_docs.filter(verification_status='PENDING').count()
+
+            return {
+                'required': required_count,
+                'accepted': accepted_count,
+                'rejected': rejected_count,
+                'pending': pending_count
+            }
+        except:
+            return {'required': 0, 'accepted': 0, 'rejected': 0, 'pending': 0}
+
 class UserDocumentSerializer(serializers.ModelSerializer):
+    document_type_name = serializers.CharField(source='document_requirement.document_type.name', read_only=True)
+    is_mandatory = serializers.BooleanField(source='document_requirement.is_mandatory', read_only=True)
+
     class Meta:
         model = UserDocument
-        fields = '__all__'
+        fields = [
+            'id', 'user_detail', 'document_requirement', 'document_type_name', 
+            'is_mandatory', 'document_value', 'file_upload', 'is_active', 
+            'uploaded_at', 'verification_status', 'verification_method', 
+            'is_verified', 'verified_at', 'verified_by'
+        ]

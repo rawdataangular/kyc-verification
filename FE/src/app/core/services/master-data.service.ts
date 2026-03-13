@@ -175,6 +175,12 @@ export class MasterDataService {
     }
 
     uploadUserDocument(formData: FormData): Observable<any> {
-        return this.http.post(`${this.baseUrl}/user-documents/`, formData);
+        return this.http.post(`${this.baseUrl}/user-documents/`, formData).pipe(
+            tap(() => this.refreshMatrix()) // Refresh if needed
+        );
+    }
+
+    verifyUserDocument(docId: number, data: any): Observable<any> {
+        return this.http.patch(`${this.baseUrl}/user-documents/${docId}/`, data);
     }
 }

@@ -67,17 +67,6 @@
                         </div>
                     </div>
 
-                    <div class="row mb-3">
-                        <div class="col-6">
-                            <label class="form-label small text-secondary fw-bold text-uppercase">State</label>
-                            <input type="text" [(ngModel)]="user.state" class="form-control" placeholder="Optional">
-                        </div>
-                        <div class="col-6">
-                            <label class="form-label small text-secondary fw-bold text-uppercase">City</label>
-                            <input type="text" [(ngModel)]="user.city" class="form-control" placeholder="Optional">
-                        </div>
-                    </div>
-
                     <div class="mb-3">
                         <label class="form-label small text-secondary fw-bold text-uppercase">Registered Address</label>
                         <textarea [(ngModel)]="user.full_address" class="form-control" rows="3"
@@ -89,51 +78,34 @@
 
         <!-- Main Content Area -->
         <div class="col-lg-8">
-            <!-- Information Tabs (Simulated with sections) -->
+            <!-- Information Tabs -->
             <div class="card border-0 shadow-sm bg-white mb-4">
-                <div class="card-header bg-white py-3 border-bottom">
+                <div class="card-header bg-white py-3 border-bottom d-flex justify-content-between align-items-center">
                     <h5 class="fw-bold mb-0">Entity Details</h5>
+                    @if (user.kyc_summary) {
+                    <div class="d-flex align-items-center gap-3">
+                        <div class="text-end">
+                            <div class="small fw-bold text-dark">{{ user.kyc_summary.accepted }}/{{
+                                user.kyc_summary.required }} Verified</div>
+                            <div class="progress" style="height: 4px; width: 100px;">
+                                <div class="progress-bar bg-success"
+                                    [style.width.%]="(user.kyc_summary.accepted / user.kyc_summary.required) * 100">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    }
                 </div>
                 <div class="card-body">
-                    <!-- Contact Section -->
                     <h6 class="text-uppercase small fw-bold text-primary mb-3">Primary Contacts</h6>
-                    <div class="row g-3 mb-4">
+                    <div class="row g-3">
                         <div class="col-md-6">
                             <label class="form-label small text-secondary fw-bold">Primary Contact Name</label>
-                            <input type="text" [(ngModel)]="user.person1_name" class="form-control"
-                                placeholder="Contact Person 1">
+                            <input type="text" [(ngModel)]="user.person1_name" class="form-control">
                         </div>
                         <div class="col-md-6">
                             <label class="form-label small text-secondary fw-bold">Primary Contact Phone</label>
-                            <input type="text" [(ngModel)]="user.person1_phone" class="form-control"
-                                placeholder="Phone 1">
-                        </div>
-                    </div>
-
-                    <!-- Banking Section (Optional) -->
-                    <div class="pt-3 border-top mt-4">
-                        <div class="d-flex justify-content-between align-items-center mb-3">
-                            <h6 class="text-uppercase small fw-bold text-primary mb-0">Banking Specification</h6>
-                            <span class="badge bg-light text-secondary border fw-bold px-2 py-1 small">OPTIONAL</span>
-                        </div>
-                        <div class="row g-3">
-                            <div class="col-md-6">
-                                <label class="form-label small text-secondary fw-bold">Bank Name</label>
-                                <input type="text" [(ngModel)]="user.bank_name" class="form-control shadow-none">
-                            </div>
-                            <div class="col-md-6">
-                                <label class="form-label small text-secondary fw-bold">Account Holder</label>
-                                <input type="text" [(ngModel)]="user.account_holder_name"
-                                    class="form-control shadow-none">
-                            </div>
-                            <div class="col-md-6">
-                                <label class="form-label small text-secondary fw-bold">Account Number</label>
-                                <input type="text" [(ngModel)]="user.account_number" class="form-control shadow-none">
-                            </div>
-                            <div class="col-md-6">
-                                <label class="form-label small text-secondary fw-bold">IFSC / SWIFT Code</label>
-                                <input type="text" [(ngModel)]="user.ifsc_swift" class="form-control shadow-none">
-                            </div>
+                            <input type="text" [(ngModel)]="user.person1_phone" class="form-control">
                         </div>
                     </div>
                 </div>
@@ -143,13 +115,13 @@
             @if (user.user_type && user.country && user.office) {
             <div class="card border-0 shadow-sm bg-white overflow-hidden mb-4">
                 <div class="card-header bg-white py-3 border-bottom d-flex justify-content-between align-items-center">
-                    <h5 class="fw-bold mb-0">Document Fulfillment</h5>
-                    <span class="text-secondary small">Based on {{ user.user_type_name }} Profile</span>
+                    <h5 class="fw-bold mb-0">Document Verification Hub</h5>
+                    <span class="text-secondary small">Fulfillment Strategy: {{ user.user_type_name }}</span>
                 </div>
                 <div class="card-body p-0">
                     <div class="list-group list-group-flush">
                         @for (req of requirements(); track req.id) {
-                        <div class="list-group-item py-4 px-4 bg-transparent">
+                        <div class="list-group-item py-4 px-4 bg-transparent border-bottom">
                             <div class="d-flex justify-content-between align-items-start mb-3">
                                 <div class="d-flex align-items-center">
                                     <div class="p-2 rounded bg-light me-3">
@@ -161,15 +133,62 @@
                                             'Optional' }} Requirement</span>
                                     </div>
                                 </div>
-                                @if (isDocUploaded(req.id!)) {
-                                <span
-                                    class="badge rounded-pill bg-success-subtle text-success border border-success-subtle fw-bold px-3 py-1">UPLOADED</span>
+
+                                @if (getUploadedDoc(req.id!)) {
+                                <div class="d-flex flex-column align-items-end gap-1">
+                                    @if (getUploadedDoc(req.id!)?.verification_status === 'VERIFIED') {
+                                    <span
+                                        class="badge rounded-pill bg-success-subtle text-success border border-success-subtle fw-bold px-3 py-1">VERIFIED</span>
+                                    <small class="text-secondary" style="font-size: 0.65rem;">via {{
+                                        getUploadedDoc(req.id!)?.verification_method }}</small>
+                                    } @else if (getUploadedDoc(req.id!)?.verification_status === 'REJECTED') {
+                                    <span
+                                        class="badge rounded-pill bg-danger-subtle text-danger border border-danger-subtle fw-bold px-3 py-1">REJECTED</span>
+                                    } @else {
+                                    <span
+                                        class="badge rounded-pill bg-warning-subtle text-warning border border-warning-subtle fw-bold px-3 py-1">PENDING
+                                        REVIEW</span>
+                                    }
+                                </div>
                                 } @else {
                                 <span
-                                    class="badge rounded-pill bg-warning-subtle text-warning border border-warning-subtle fw-bold px-3 py-1">MISSING</span>
+                                    class="badge rounded-pill bg-light text-secondary border border-secondary-subtle fw-bold px-3 py-1">MISSING</span>
                                 }
                             </div>
 
+                            @if (getUploadedDoc(req.id!)) {
+                            <div class="bg-light p-3 rounded-3 border">
+                                <div class="d-flex justify-content-between align-items-center mb-3">
+                                    <a [href]="'http://localhost:8000' + getUploadedDoc(req.id!)?.file_upload"
+                                        target="_blank"
+                                        class="btn btn-sm btn-outline-dark d-flex align-items-center gap-2">
+                                        <i-lucide name="external-link" style="width: 14px;"></i-lucide>
+                                        View / Download
+                                    </a>
+                                    <div class="small text-secondary">Uploaded on: {{
+                                        getUploadedDoc(req.id!)?.uploaded_at | date:'medium' }}</div>
+                                </div>
+
+                                @if (getUploadedDoc(req.id!)?.verification_status === 'PENDING') {
+                                <div class="d-flex align-items-center gap-3 pt-3 border-top mt-2">
+                                    <div class="flex-grow-1">
+                                        <label class="form-label small fw-bold text-secondary mb-1">Select Verification
+                                            Method</label>
+                                        <select class="form-select form-select-sm shadow-none" #vMethod>
+                                            <option value="MANUAL">Manual Validation</option>
+                                            <option value="PORTAL">Portal Integration Verify</option>
+                                        </select>
+                                    </div>
+                                    <div class="d-flex gap-2 align-self-end">
+                                        <button class="btn btn-sm btn-outline-danger px-3 fw-bold"
+                                            (click)="verifyDoc(req.id!, 'REJECTED', vMethod.value)">Reject</button>
+                                        <button class="btn btn-sm btn-success px-3 fw-bold shadow-sm"
+                                            (click)="verifyDoc(req.id!, 'VERIFIED', vMethod.value)">Approve</button>
+                                    </div>
+                                </div>
+                                }
+                            </div>
+                            } @else {
                             <div class="upload-zone position-relative">
                                 <input type="file"
                                     class="position-absolute top-0 start-0 opacity-0 w-100 h-100 cursor-pointer"
@@ -179,10 +198,12 @@
                                     <div class="text-center py-2">
                                         <i-lucide name="upload" class="mb-1 text-secondary"
                                             style="width: 20px;"></i-lucide>
-                                        <div class="small fw-semibold text-secondary">Click or Drag PDF to upload</div>
+                                        <div class="small fw-semibold text-secondary">Click to upload {{
+                                            req.document_type_name }}</div>
                                     </div>
                                 </div>
                             </div>
+                            }
                         </div>
                         } @empty {
                         <div class="text-center py-5 text-secondary">
@@ -227,5 +248,12 @@
     .form-select:focus {
         border-color: #2563eb;
         box-shadow: 0 0 0 0.25rem rgba(37, 99, 235, 0.1);
+    }
+
+    .badge-pill {
+        padding: 0.4rem 0.8rem;
+        border-radius: 50rem;
+        font-size: 0.75rem;
+        letter-spacing: 0.02em;
     }
 </style>

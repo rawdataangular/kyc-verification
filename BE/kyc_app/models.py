@@ -152,6 +152,29 @@ class UserDocument(models.Model):
     )
     is_active = models.BooleanField(default=True)
     uploaded_at = models.DateTimeField(auto_now_add=True)
+    
+    # Verification details
+    verification_status = models.CharField(
+        max_length=30,
+        choices=[
+            ('PENDING', 'Pending'),
+            ('VERIFIED', 'Verified'),
+            ('REJECTED', 'Rejected'),
+        ],
+        default='PENDING'
+    )
+    verification_method = models.CharField(
+        max_length=30,
+        choices=[
+            ('MANUAL', 'Manual'),
+            ('PORTAL', 'Via Portal'),
+        ],
+        blank=True,
+        null=True
+    )
+    is_verified = models.BooleanField(default=False)
+    verified_at = models.DateTimeField(null=True, blank=True)
+    verified_by = models.ForeignKey(MasterUser, on_delete=models.SET_NULL, null=True, blank=True, related_name='verified_docs')
 
     class Meta:
         indexes = [models.Index(fields=['user_detail', 'is_active'])]

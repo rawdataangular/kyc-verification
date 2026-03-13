@@ -26,16 +26,23 @@ export class DashboardComponent {
 
     getStatusClassName(status: string): string {
         switch (status) {
+            case 'APPROVED':
             case 'Verified':
                 return 'badge-verified';
+            case 'PENDING_APPROVAL':
             case 'Approval Pending':
                 return 'badge-approval';
+            case 'KYC_PENDING':
             case 'KYC Pending':
                 return 'badge-pending';
+            case 'EXPIRED':
             case 'KYC Expired':
                 return 'badge-expired';
+            case 'REJECTED':
             case 'KYC Rejected':
                 return 'badge-rejected';
+            case 'DRAFT':
+                return 'bg-light text-dark border';
             default:
                 return 'bg-secondary text-white';
         }
