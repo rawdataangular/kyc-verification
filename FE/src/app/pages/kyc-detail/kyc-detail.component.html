@@ -1,41 +1,39 @@
 <div class="container py-4">
-    <!-- Header with Back Button -->
+    <!-- Top Navigation -->
     <div class="d-flex align-items-center gap-3 mb-5">
         <button routerLink="/" class="btn btn-link p-0 text-dark">
             <i-lucide name="arrow-left" style="width: 24px;"></i-lucide>
         </button>
-        <h1 class="h3 fw-bold mb-0">{{ isEditMode ? 'Modify Profile' : 'Register New KYC Entity' }}</h1>
+        <h1 class="h3 fw-bold mb-0">Entity Verification Details</h1>
     </div>
 
     <div class="row g-4">
-        <!-- Sidebar: Entity Profile -->
+        <!-- Sidebar: Entity Identity -->
         <div class="col-lg-4">
-            <div class="card border-0 shadow-sm p-4 h-100 bg-white">
+            <div class="card border-0 shadow-sm p-4 h-100 bg-white rounded-4">
                 <div class="text-center mb-4">
                     <div class="rounded-circle bg-primary-subtle d-inline-flex align-items-center justify-content-center text-primary fw-bold mb-3"
                         style="width: 80px; height: 80px; font-size: 2rem;">
                         {{ (user.name || 'E').substring(0, 1).toUpperCase() }}
                     </div>
-                    <h2 class="h5 fw-bold mb-1">{{ user.name || 'Entity Name' }}</h2>
+                    <h2 class="h5 fw-bold mb-1 text-dark">{{ user.name || 'Unnamed Entity' }}</h2>
                     <span
-                        class="badge rounded-pill bg-light text-secondary border border-secondary-subtle px-3 py-1 fw-bold small text-uppercase">
+                        class="badge rounded-pill bg-light text-secondary border px-3 py-1 fw-bold small text-uppercase">
                         {{ user.status }}
                     </span>
                 </div>
 
-                <div class="entity-form">
+                <div class="profile-details-grid">
                     <div class="mb-3">
-                        <label class="form-label small text-secondary fw-bold text-uppercase">Full Display Name <span
-                                class="text-danger">*</span></label>
-                        <input type="text" [(ngModel)]="user.name" class="form-control"
-                            placeholder="Company or Individual Name">
+                        <label class="form-label small text-secondary fw-bold text-uppercase">Legal Name</label>
+                        <input type="text" [(ngModel)]="user.name" class="form-control" placeholder="Entity Legal Name">
                     </div>
 
                     <div class="mb-3">
-                        <label class="form-label small text-secondary fw-bold text-uppercase">Classification <span
-                                class="text-danger">*</span></label>
+                        <label class="form-label small text-secondary fw-bold text-uppercase">User
+                            Classification</label>
                         <select [(ngModel)]="user.user_type" class="form-select" (change)="onProfileChange()">
-                            <option [value]="0">Select Type...</option>
+                            <option [value]="0">Select Classification...</option>
                             @for (t of userTypes(); track t.id) {
                             <option [value]="t.id">{{ t.name }}</option>
                             }
@@ -44,8 +42,7 @@
 
                     <div class="row mb-3">
                         <div class="col-6">
-                            <label class="form-label small text-secondary fw-bold text-uppercase">Country <span
-                                    class="text-danger">*</span></label>
+                            <label class="form-label small text-secondary fw-bold text-uppercase">Country</label>
                             <select [(ngModel)]="user.country" class="form-select" (change)="onProfileChange()">
                                 <option [value]="0">Select...</option>
                                 @for (c of countries(); track c.id) {
@@ -54,181 +51,216 @@
                             </select>
                         </div>
                         <div class="col-6">
-                            <label class="form-label small text-secondary fw-bold text-uppercase">Office <span
-                                    class="text-danger">*</span></label>
+                            <label class="form-label small text-secondary fw-bold text-uppercase">Office</label>
                             <select [(ngModel)]="user.office" class="form-select" (change)="onProfileChange()">
                                 <option [value]="0">Select...</option>
                                 @for (o of offices(); track o.id) {
-                                @if(o.country == user.country || user.country == 0) {
+                                @if(o.country == user.country || user.country == 0 || !user.country) {
                                 <option [value]="o.id">{{ o.name }}</option>
                                 }
                                 }
                             </select>
                         </div>
                     </div>
+                </div>
 
-                    <div class="mb-3">
-                        <label class="form-label small text-secondary fw-bold text-uppercase">Registered Address</label>
-                        <textarea [(ngModel)]="user.full_address" class="form-control" rows="3"
-                            placeholder="Primary Address line..."></textarea>
-                    </div>
+                <hr class="my-4">
+
+                <div class="mb-4">
+                    <label class="form-label small text-secondary fw-bold text-uppercase">Primary Contact Info</label>
+                    <input type="text" [(ngModel)]="user.person1_name" class="form-control mb-2"
+                        placeholder="Contact Name">
+                    <input type="text" [(ngModel)]="user.person1_phone" class="form-control"
+                        placeholder="Contact Phone">
                 </div>
             </div>
         </div>
 
-        <!-- Main Content Area -->
+        <!-- Main Verification Zone -->
         <div class="col-lg-8">
-            <!-- Information Tabs -->
-            <div class="card border-0 shadow-sm bg-white mb-4">
+            <div class="card border-0 shadow-sm bg-white rounded-4 overflow-hidden mb-4">
                 <div class="card-header bg-white py-3 border-bottom d-flex justify-content-between align-items-center">
-                    <h5 class="fw-bold mb-0">Entity Details</h5>
+                    <div>
+                        <h5 class="fw-bold mb-0 text-dark">Document Verification Hub</h5>
+                        <p class="small text-secondary mb-0">Compliance Checklist for {{ user.user_type_name }}</p>
+                    </div>
                     @if (user.kyc_summary) {
-                    <div class="d-flex align-items-center gap-3">
-                        <div class="text-end">
-                            <div class="small fw-bold text-dark">{{ user.kyc_summary.accepted }}/{{
-                                user.kyc_summary.required }} Verified</div>
-                            <div class="progress" style="height: 4px; width: 100px;">
-                                <div class="progress-bar bg-success"
-                                    [style.width.%]="(user.kyc_summary.accepted / user.kyc_summary.required) * 100">
-                                </div>
+                    <div class="text-end">
+                        <span class="small fw-bold text-primary">{{ user.kyc_summary.accepted }} of {{
+                            user.kyc_summary.required }} Verified</span>
+                        <div class="progress mt-1" style="height: 6px; width: 150px; border-radius: 10px;">
+                            <div class="progress-bar bg-primary"
+                                [style.width.%]="(user.kyc_summary.accepted / (user.kyc_summary.required || 1)) * 100">
                             </div>
                         </div>
                     </div>
                     }
                 </div>
-                <div class="card-body">
-                    <h6 class="text-uppercase small fw-bold text-primary mb-3">Primary Contacts</h6>
-                    <div class="row g-3">
-                        <div class="col-md-6">
-                            <label class="form-label small text-secondary fw-bold">Primary Contact Name</label>
-                            <input type="text" [(ngModel)]="user.person1_name" class="form-control">
-                        </div>
-                        <div class="col-md-6">
-                            <label class="form-label small text-secondary fw-bold">Primary Contact Phone</label>
-                            <input type="text" [(ngModel)]="user.person1_phone" class="form-control">
-                        </div>
-                    </div>
-                </div>
-            </div>
 
-            <!-- Mandatory Documents Section -->
-            @if (user.user_type && user.country && user.office) {
-            <div class="card border-0 shadow-sm bg-white overflow-hidden mb-4">
-                <div class="card-header bg-white py-3 border-bottom d-flex justify-content-between align-items-center">
-                    <h5 class="fw-bold mb-0">Document Verification Hub</h5>
-                    <span class="text-secondary small">Fulfillment Strategy: {{ user.user_type_name }}</span>
-                </div>
                 <div class="card-body p-0">
                     <div class="list-group list-group-flush">
                         @for (req of requirements(); track req.id) {
-                        <div class="list-group-item py-4 px-4 bg-transparent border-bottom">
-                            <div class="d-flex justify-content-between align-items-start mb-3">
+                        <div class="list-group-item p-4 border-bottom">
+                            <!-- HEADER OF ROW -->
+                            <div class="d-flex justify-content-between align-items-start mb-4">
                                 <div class="d-flex align-items-center">
-                                    <div class="p-2 rounded bg-light me-3">
-                                        <i-lucide name="file-text" style="width: 20px; color: #2563eb;"></i-lucide>
+                                    <div
+                                        class="p-3 rounded-circle bg-light border me-3 d-flex align-items-center justify-content-center">
+                                        <i-lucide name="file-text" style="width: 24px; color: #3b82f6;"></i-lucide>
                                     </div>
                                     <div>
-                                        <h6 class="fw-bold mb-0">{{ req.document_type_name }}</h6>
-                                        <span class="text-secondary small">{{ req.is_mandatory ? 'Mandatory' :
-                                            'Optional' }} Requirement</span>
+                                        <h6 class="fw-bold mb-1 text-dark fs-5">{{ req.document_type_name || 'Standard
+                                            Document' }}</h6>
+                                        <div class="d-flex align-items-center gap-2">
+                                            <span class="badge bg-light text-secondary small fw-bold border">ID: #{{
+                                                req.id }}</span>
+                                            <span class="text-secondary small fw-bold">{{ req.is_mandatory ? 'MANDATORY'
+                                                : 'OPTIONAL' }}</span>
+                                        </div>
                                     </div>
                                 </div>
 
                                 @if (getUploadedDoc(req.id!)) {
-                                <div class="d-flex flex-column align-items-end gap-1">
+                                <div class="text-end">
                                     @if (getUploadedDoc(req.id!)?.verification_status === 'VERIFIED') {
-                                    <span
-                                        class="badge rounded-pill bg-success-subtle text-success border border-success-subtle fw-bold px-3 py-1">VERIFIED</span>
-                                    <small class="text-secondary" style="font-size: 0.65rem;">via {{
-                                        getUploadedDoc(req.id!)?.verification_method }}</small>
+                                    <span class="badge bg-success text-white px-3 py-2 fw-bold rounded-pill">VERIFIED
+                                        ✓</span>
                                     } @else if (getUploadedDoc(req.id!)?.verification_status === 'REJECTED') {
-                                    <span
-                                        class="badge rounded-pill bg-danger-subtle text-danger border border-danger-subtle fw-bold px-3 py-1">REJECTED</span>
+                                    <span class="badge bg-danger text-white px-3 py-2 fw-bold rounded-pill">REJECTED
+                                        ✕</span>
                                     } @else {
-                                    <span
-                                        class="badge rounded-pill bg-warning-subtle text-warning border border-warning-subtle fw-bold px-3 py-1">PENDING
+                                    <span class="badge bg-warning text-dark px-3 py-2 fw-bold rounded-pill">PENDING
                                         REVIEW</span>
                                     }
                                 </div>
                                 } @else {
                                 <span
-                                    class="badge rounded-pill bg-light text-secondary border border-secondary-subtle fw-bold px-3 py-1">MISSING</span>
+                                    class="badge bg-light text-secondary px-3 py-2 fw-bold rounded-pill border">MISSING</span>
                                 }
                             </div>
 
-                            @if (getUploadedDoc(req.id!)) {
-                            <div class="bg-light p-3 rounded-3 border">
-                                <div class="d-flex justify-content-between align-items-center mb-3">
-                                    <a [href]="'http://localhost:8000' + getUploadedDoc(req.id!)?.file_upload"
-                                        target="_blank"
-                                        class="btn btn-sm btn-outline-dark d-flex align-items-center gap-2">
-                                        <i-lucide name="external-link" style="width: 14px;"></i-lucide>
-                                        View / Download
-                                    </a>
-                                    <div class="small text-secondary">Uploaded on: {{
-                                        getUploadedDoc(req.id!)?.uploaded_at | date:'medium' }}</div>
-                                </div>
+                            <!-- ACTION ZONE -->
+                            <div class="verification-action-container">
 
-                                @if (getUploadedDoc(req.id!)?.verification_status === 'PENDING') {
-                                <div class="d-flex align-items-center gap-3 pt-3 border-top mt-2">
-                                    <div class="flex-grow-1">
-                                        <label class="form-label small fw-bold text-secondary mb-1">Select Verification
-                                            Method</label>
-                                        <select class="form-select form-select-sm shadow-none" #vMethod>
-                                            <option value="MANUAL">Manual Validation</option>
-                                            <option value="PORTAL">Portal Integration Verify</option>
-                                        </select>
+                                <!-- CASE 1: ALREADY UPLOADED -->
+                                @if (getUploadedDoc(req.id!)) {
+                                <div class="p-4 rounded-4 bg-light border border-light-subtle shadow-sm">
+                                    <div class="row align-items-center">
+                                        <div class="col-md-6">
+                                            <div class="d-flex gap-2">
+                                                <a [href]="'http://localhost:8000' + getUploadedDoc(req.id!)?.file_upload"
+                                                    target="_blank"
+                                                    class="btn btn-white btn-sm border fw-bold d-flex align-items-center gap-2">
+                                                    <i-lucide name="eye" style="width: 14px;"></i-lucide> Preview
+                                                </a>
+                                                <a [href]="'http://localhost:8000' + getUploadedDoc(req.id!)?.file_upload"
+                                                    [download]="getUploadedDoc(req.id!)?.file_upload"
+                                                    class="btn btn-white btn-sm border fw-bold d-flex align-items-center gap-2">
+                                                    <i-lucide name="download" style="width: 14px;"></i-lucide> Download
+                                                </a>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6 text-end">
+                                            <small class="text-secondary fw-medium">Uploaded: {{
+                                                getUploadedDoc(req.id!)?.uploaded_at | date:'short' }}</small>
+                                        </div>
                                     </div>
-                                    <div class="d-flex gap-2 align-self-end">
-                                        <button class="btn btn-sm btn-outline-danger px-3 fw-bold"
-                                            (click)="verifyDoc(req.id!, 'REJECTED', vMethod.value)">Reject</button>
-                                        <button class="btn btn-sm btn-success px-3 fw-bold shadow-sm"
-                                            (click)="verifyDoc(req.id!, 'VERIFIED', vMethod.value)">Approve</button>
+
+                                    <!-- VERIFICATION CONTROLS -->
+                                    <div class="mt-4 pt-3 border-top">
+                                        <div class="row g-2">
+                                            <div class="col-md-6">
+                                                <button
+                                                    class="btn btn-primary w-100 fw-bold shadow-sm d-flex align-items-center justify-content-center gap-2"
+                                                    (click)="systemVerify(req.id!)"
+                                                    [disabled]="isSystemVerifying.get(req.id!)">
+                                                    <i-lucide [name]="isSystemVerifying.get(req.id!) ? 'loader' : 'cpu'"
+                                                        class="svg-spin" style="width: 16px;"></i-lucide>
+                                                    System Verification
+                                                </button>
+                                            </div>
+                                            <div class="col-md-3">
+                                                <button class="btn btn-success w-100 fw-bold text-white shadow-sm"
+                                                    (click)="verifyDoc(req.id!, 'VERIFIED', 'MANUAL')">Manual
+                                                    Approve</button>
+                                            </div>
+                                            <div class="col-md-3">
+                                                <button class="btn btn-outline-danger w-100 fw-bold"
+                                                    (click)="verifyDoc(req.id!, 'REJECTED', 'MANUAL')">Reject</button>
+                                            </div>
+                                        </div>
+
+                                        <!-- LOGS -->
+                                        @if (systemVerificationLog.has(req.id!)) {
+                                        <div
+                                            class="mt-3 p-2 px-3 rounded bg-dark text-white small font-monospace d-flex align-items-center gap-2 shadow-inner">
+                                            <i-lucide name="terminal" style="width: 14px;"
+                                                class="text-success"></i-lucide>
+                                            <span>{{ systemVerificationLog.get(req.id!) }}</span>
+                                        </div>
+                                        }
                                     </div>
                                 </div>
                                 }
-                            </div>
-                            } @else {
-                            <div class="upload-zone position-relative">
-                                <input type="file"
-                                    class="position-absolute top-0 start-0 opacity-0 w-100 h-100 cursor-pointer"
-                                    (change)="handleFileInput($event, req.id!)" [disabled]="!user.id">
+
+                                <!-- CASE 2: SELECTED BUT NOT SAVED -->
+                                @else if (selectedFiles.has(req.id!)) {
                                 <div
-                                    class="p-3 rounded bg-light border border-dashed d-flex align-items-center justify-content-center">
-                                    <div class="text-center py-2">
-                                        <i-lucide name="upload" class="mb-1 text-secondary"
-                                            style="width: 20px;"></i-lucide>
-                                        <div class="small fw-semibold text-secondary">Click to upload {{
-                                            req.document_type_name }}</div>
+                                    class="p-4 rounded-4 bg-primary-subtle border border-primary-subtle d-flex justify-content-between align-items-center">
+                                    <div class="d-flex align-items-center gap-3">
+                                        <i-lucide name="file" class="text-primary" style="width: 32px;"></i-lucide>
+                                        <div>
+                                            <div class="fw-bold text-primary">{{ selectedFiles.get(req.id!)?.name }}
+                                            </div>
+                                            <div class="small text-secondary fw-bold text-uppercase">{{
+                                                (selectedFiles.get(req.id!)?.size || 0) / 1024 | number:'1.0-0' }} KB
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="d-flex gap-2">
+                                        <button class="btn btn-link text-danger fw-bold"
+                                            (click)="selectedFiles.delete(req.id!)">Discard</button>
+                                        <button class="btn btn-primary px-4 fw-bold shadow"
+                                            (click)="uploadSelectedFile(req.id!)" [disabled]="isUploading()">
+                                            {{ isUploading() ? 'Processing...' : 'Save & Upload File' }}
+                                        </button>
                                     </div>
                                 </div>
+                                }
+
+                                <!-- CASE 3: READY TO BROWSE -->
+                                @else {
+                                <div class="upload-area-wrapper position-relative">
+                                    <input type="file"
+                                        class="position-absolute top-0 start-0 w-100 h-100 opacity-0 cursor-pointer"
+                                        (change)="handleFileInput($event, req.id!)" [disabled]="!user.id">
+                                    <div
+                                        class="p-5 bg-light border border-dashed rounded-4 text-center hover-blue-glow transition-all">
+                                        <i-lucide name="upload-cloud" class="mb-2 text-secondary opacity-50"
+                                            style="width: 48px;"></i-lucide>
+                                        <div class="fw-bold text-secondary">Click to browse or Drag file here</div>
+                                        <p class="small text-secondary mb-0">PDF, JPG, PNG allowed (Max 5MB)</p>
+                                    </div>
+                                </div>
+                                }
                             </div>
-                            }
                         </div>
                         } @empty {
                         <div class="text-center py-5 text-secondary">
-                            <i-lucide name="inbox" class="mb-2 opacity-25" style="width: 48px;"></i-lucide>
-                            <p class="mb-0">No document requirements found for this specific profile context.</p>
+                            <i-lucide name="settings" class="mb-2 opacity-25" style="width: 64px;"></i-lucide>
+                            <p class="mb-0 fs-5 fw-bold">Checklist is empty.</p>
+                            <p class="small">No documents are mapped for this entity profile configuration.</p>
                         </div>
                         }
                     </div>
                 </div>
             </div>
-            } @else {
-            <div class="card border-0 shadow-sm p-5 text-center bg-white opacity-75">
-                <i-lucide name="settings" class="text-secondary mb-3 mx-auto" style="width: 48px;"></i-lucide>
-                <h5 class="fw-bold">Dynamic Checklist</h5>
-                <p class="text-secondary mb-0">Select a Classification, Country, and Office to generate the document
-                    requirement checklist.</p>
-            </div>
-            }
 
-            <!-- Bottom Actions -->
+            <!-- Global Actions -->
             <div class="d-flex justify-content-end gap-3 mt-5 pb-5">
-                <button routerLink="/" class="btn btn-outline-secondary px-5 fw-bold rounded-3">Discard</button>
-                <button (click)="saveProfile()" class="btn btn-primary px-5 fw-bold rounded-3 shadow-sm">
-                    {{ isEditMode ? 'Update Entity' : 'Complete Registration' }}
-                </button>
+                <button routerLink="/" class="btn btn-light px-5 fw-bold rounded-pill border">Discard Changes</button>
+                <button (click)="saveProfile()" class="btn btn-primary px-5 fw-bold rounded-pill shadow-lg">Submit
+                    Updates</button>
             </div>
         </div>
     </div>
@@ -242,18 +274,43 @@
     .border-dashed {
         border-style: dashed !important;
         border-width: 2px !important;
+        border-color: #cbd5e1 !important;
     }
 
-    .form-control:focus,
-    .form-select:focus {
-        border-color: #2563eb;
-        box-shadow: 0 0 0 0.25rem rgba(37, 99, 235, 0.1);
+    .hover-blue-glow:hover {
+        background-color: #f8fbff !important;
+        border-color: #3b82f6 !important;
+        box-shadow: 0 0 15px rgba(59, 130, 246, 0.1);
     }
 
-    .badge-pill {
-        padding: 0.4rem 0.8rem;
-        border-radius: 50rem;
-        font-size: 0.75rem;
-        letter-spacing: 0.02em;
+    .transition-all {
+        transition: all 0.25s ease;
+    }
+
+    .btn-white {
+        background: #fff;
+        color: #334155;
+    }
+
+    .btn-white:hover {
+        background: #f1f5f9;
+    }
+
+    .shadow-inner {
+        box-shadow: inset 0 2px 4px 0 rgba(0, 0, 0, 0.06);
+    }
+
+    .svg-spin {
+        animation: spin 2s linear infinite;
+    }
+
+    @keyframes spin {
+        from {
+            transform: rotate(0deg);
+        }
+
+        to {
+            transform: rotate(360deg);
+        }
     }
 </style>

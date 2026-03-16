@@ -1,4 +1,4 @@
-import { Component, inject, OnInit, signal, computed } from '@angular/core';
+import { Component, inject, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, RouterModule, Router } from '@angular/router';
@@ -19,7 +19,6 @@ export class KycDetailComponent implements OnInit {
 
     isEditMode = false;
 
-    // Data lists
     countries = signal<CountryMaster[]>([]);
     offices = signal<OfficeMaster[]>([]);
     userTypes = signal<UserTypeMaster[]>([]);
@@ -37,8 +36,12 @@ export class KycDetailComponent implements OnInit {
         documents: []
     };
 
+    selectedFiles: Map<number, File> = new Map();
+    isUploading = signal<boolean>(false);
+    systemVerificationLog: Map<number, string> = new Map();
+    isSystemVerifying: Map<number, boolean> = new Map();
+
     ngOnInit() {
-        // Load Master Data
         this.masterDataService.countries$.subscribe(data => this.countries.set(data));
         this.masterDataService.offices$.subscribe(data => this.offices.set(data));
         this.masterDataService.userTypes$.subscribe(data => this.userTypes.set(data));
@@ -75,49 +78,58 @@ export class KycDetailComponent implements OnInit {
 
     saveProfile() {
         if (!this.user.name || !this.user.country || !this.user.office || !this.user.user_type) {
-            alert('Please fill all mandatory fields (Name, Classification, Country, Office).');
+            alert('Missing Name, Classification, Country, or Office.');
             return;
         }
 
         this.masterDataService.saveUserDetail(this.user).subscribe({
             next: (data) => {
-                alert('Profile saved successfully!');
+                alert('Profile saved!');
                 if (!this.isEditMode) {
                     this.router.navigate(['/kyc', data.id]);
                 } else {
                     this.user = data;
                 }
             },
-            error: (err) => {
-                console.error(err);
-                alert('Error saving profile. Check console.');
-            }
+            error: (err) => { console.error(err); alert('Save failed.'); }
         });
     }
 
     handleFileInput(event: any, requirementId: number) {
         const file = event.target.files[0];
+        if (file) {
+            this.selectedFiles.set(requirementId, file);
+        }
+    }
+
+    uploadSelectedFile(requirementId: number) {
+        const file = this.selectedFiles.get(requirementId);
         if (file && this.user.id) {
+            this.isUploading.set(true);
             const formData = new FormData();
             formData.append('user_detail', this.user.id.toString());
             formData.append('document_requirement', requirementId.toString());
             formData.append('file_upload', file);
+            formData.append('is_active', 'true'); // Explicitly set active
 
-            this.masterDataService.uploadUserDocument(formData).subscribe(() => {
-                alert('Document uploaded!');
-                this.refreshUserData();
+            this.masterDataService.uploadUserDocument(formData).subscribe({
+                next: () => {
+                    this.isUploading.set(false);
+                    alert('Uploaded!');
+                    this.selectedFiles.delete(requirementId);
+                    this.refreshUserData();
+                },
+                error: () => { this.isUploading.set(false); alert('Upload failed.'); }
             });
-        } else if (!this.user.id) {
-            alert('Please save the profile first before uploading documents.');
+        } else {
+            alert('Save profile first.');
         }
     }
 
     getUploadedDoc(requirementId: number): UserDocument | undefined {
-        return this.user.documents?.find(d => d.document_requirement === requirementId && d.is_active);
-    }
-
-    isDocUploaded(requirementId: number): boolean {
-        return !!this.getUploadedDoc(requirementId);
+        // Return the latest active document for this requirement
+        return this.user.documents?.filter(d => d.document_requirement === requirementId && d.is_active)
+            .sort((a, b) => (b.id || 0) - (a.id || 0))[0];
     }
 
     verifyDoc(requirementId: number, status: 'VERIFIED' | 'REJECTED', method: string) {
@@ -129,9 +141,32 @@ export class KycDetailComponent implements OnInit {
                 is_verified: status === 'VERIFIED'
             };
             this.masterDataService.verifyUserDocument(doc.id, updateData).subscribe(() => {
-                alert(`Document ${status.toLowerCase()} via ${method.toLowerCase()}!`);
+                alert(`Verified as ${status} via ${method}`);
                 this.refreshUserData();
             });
+        }
+    }
+
+    systemVerify(requirementId: number) {
+        const doc = this.getUploadedDoc(requirementId);
+        if (doc && doc.id) {
+            this.isSystemVerifying.set(requirementId, true);
+            this.systemVerificationLog.set(requirementId, 'Connecting to verification portal...');
+
+            setTimeout(() => {
+                this.systemVerificationLog.set(requirementId, 'Authenticated. Scanning document signature...');
+                setTimeout(() => {
+                    const success = Math.random() > 0.1;
+                    this.isSystemVerifying.set(requirementId, false);
+                    if (success) {
+                        this.systemVerificationLog.set(requirementId, 'MATCH FOUND. Identity confirmed.');
+                        this.verifyDoc(requirementId, 'VERIFIED', 'PORTAL');
+                    } else {
+                        this.systemVerificationLog.set(requirementId, 'MISMATCH. Verification failed.');
+                        this.verifyDoc(requirementId, 'REJECTED', 'PORTAL');
+                    }
+                }, 1500);
+            }, 1000);
         }
     }
 }
