@@ -152,6 +152,7 @@ class UserDocument(models.Model):
     )
     is_active = models.BooleanField(default=True)
     uploaded_at = models.DateTimeField(auto_now_add=True)
+    validity_date = models.DateField(null=True, blank=True, help_text="Until when the document is valid")
     
     # Verification details
     verification_status = models.CharField(

@@ -78,6 +78,7 @@ export interface UserDocument {
     file_upload: string;
     is_active: boolean;
     uploaded_at: string;
+    validity_date?: string;
     verification_status: 'PENDING' | 'VERIFIED' | 'REJECTED';
     verification_method?: 'MANUAL' | 'PORTAL';
     is_verified: boolean;

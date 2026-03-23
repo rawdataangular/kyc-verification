@@ -37,6 +37,8 @@ export class KycDetailComponent implements OnInit {
     };
 
     selectedFiles: Map<number, File> = new Map();
+    validityDateInputs: Map<number, string> = new Map();
+    changeDocRequests: Set<number> = new Set();
     isUploading = signal<boolean>(false);
     systemVerificationLog: Map<number, string> = new Map();
     isSystemVerifying: Map<number, boolean> = new Map();
@@ -64,16 +66,28 @@ export class KycDetailComponent implements OnInit {
     }
 
     onProfileChange() {
-        if (this.user.user_type && this.user.country && this.user.office) {
+        const type = Number(this.user.user_type);
+        const country = Number(this.user.country);
+        const office = Number(this.user.office);
+        
+        if (type > 0 && country > 0 && office > 0) {
             this.fetchRequirements();
+        } else {
+            this.requirements.set([]);
         }
     }
 
     fetchRequirements() {
-        this.masterDataService.getRequirements(this.user.user_type, this.user.country, this.user.office)
-            .subscribe(data => {
-                this.requirements.set(data);
-            });
+        const type = Number(this.user.user_type);
+        const country = Number(this.user.country);
+        const office = Number(this.user.office);
+
+        if (type > 0 && country > 0 && office > 0) {
+            this.masterDataService.getRequirements(type, country, office)
+                .subscribe(data => {
+                    this.requirements.set(data);
+                });
+        }
     }
 
     saveProfile() {
@@ -112,11 +126,18 @@ export class KycDetailComponent implements OnInit {
             formData.append('file_upload', file);
             formData.append('is_active', 'true'); // Explicitly set active
 
+            const validityDate = this.validityDateInputs.get(requirementId);
+            if (validityDate) {
+                formData.append('validity_date', validityDate);
+            }
+
             this.masterDataService.uploadUserDocument(formData).subscribe({
                 next: () => {
                     this.isUploading.set(false);
                     alert('Uploaded!');
                     this.selectedFiles.delete(requirementId);
+                    this.validityDateInputs.delete(requirementId);
+                    this.changeDocRequests.delete(requirementId);
                     this.refreshUserData();
                 },
                 error: () => { this.isUploading.set(false); alert('Upload failed.'); }
@@ -128,8 +149,23 @@ export class KycDetailComponent implements OnInit {
 
     getUploadedDoc(requirementId: number): UserDocument | undefined {
         // Return the latest active document for this requirement
-        return this.user.documents?.filter(d => d.document_requirement === requirementId && d.is_active)
+        return (this.user.documents || []).filter(d => d.document_requirement === requirementId && d.is_active)
             .sort((a, b) => (b.id || 0) - (a.id || 0))[0];
+    }
+
+    getDocUrl(url: string | undefined): string {
+        if (!url) return '';
+        if (url.startsWith('http')) return url;
+        return `http://localhost:8000${url.startsWith('/') ? '' : '/'}${url}`;
+    }
+
+    requestChangeDoc(requirementId: number) {
+        this.changeDocRequests.add(requirementId);
+    }
+
+    cancelChangeDoc(requirementId: number) {
+        this.changeDocRequests.delete(requirementId);
+        this.selectedFiles.delete(requirementId);
     }
 
     verifyDoc(requirementId: number, status: 'VERIFIED' | 'REJECTED', method: string) {
