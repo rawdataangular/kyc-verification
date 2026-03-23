@@ -42,6 +42,7 @@ export class KycDetailComponent implements OnInit {
     isUploading = signal<boolean>(false);
     systemVerificationLog: Map<number, string> = new Map();
     isSystemVerifying: Map<number, boolean> = new Map();
+    validityDateUpdates: Map<number, string> = new Map();
 
     ngOnInit() {
         this.masterDataService.countries$.subscribe(data => this.countries.set(data));
@@ -69,7 +70,7 @@ export class KycDetailComponent implements OnInit {
         const type = Number(this.user.user_type);
         const country = Number(this.user.country);
         const office = Number(this.user.office);
-        
+
         if (type > 0 && country > 0 && office > 0) {
             this.fetchRequirements();
         } else {
@@ -159,6 +160,11 @@ export class KycDetailComponent implements OnInit {
         return `http://localhost:8000${url.startsWith('/') ? '' : '/'}${url}`;
     }
 
+    getFormatDate(dateStr: string | undefined): string | null {
+        if (!dateStr) return null;
+        return dateStr.split('T')[0];
+    }
+
     requestChangeDoc(requirementId: number) {
         this.changeDocRequests.add(requirementId);
     }
@@ -183,6 +189,23 @@ export class KycDetailComponent implements OnInit {
         }
     }
 
+    updateValidityDate(requirementId: number, date: string) {
+        this.validityDateUpdates.set(requirementId, date);
+    }
+
+    saveValidityDate(requirementId: number) {
+        const doc = this.getUploadedDoc(requirementId);
+        const newDate = this.validityDateUpdates.get(requirementId);
+        if (doc && doc.id && newDate) {
+            const updateData = { validity_date: newDate };
+            this.masterDataService.verifyUserDocument(doc.id, updateData).subscribe(() => {
+                alert('Validity Date Updated');
+                this.validityDateUpdates.delete(requirementId);
+                this.refreshUserData();
+            });
+        }
+    }
+
     systemVerify(requirementId: number) {
         const doc = this.getUploadedDoc(requirementId);
         if (doc && doc.id) {
@@ -192,7 +215,7 @@ export class KycDetailComponent implements OnInit {
             setTimeout(() => {
                 this.systemVerificationLog.set(requirementId, 'Authenticated. Scanning document signature...');
                 setTimeout(() => {
-                    const success = Math.random() > 0.1;
+                    const success = Math.random() > 10;
                     this.isSystemVerifying.set(requirementId, false);
                     if (success) {
                         this.systemVerificationLog.set(requirementId, 'MATCH FOUND. Identity confirmed.');

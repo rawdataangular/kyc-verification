@@ -165,7 +165,8 @@
                                                 getUploadedDoc(req.id!)?.uploaded_at | date:'short' }}</small>
                                             @if (getUploadedDoc(req.id!)?.validity_date) {
                                             <div class="small fw-bold text-danger mt-1">
-                                                Valid Till: {{ getUploadedDoc(req.id!)?.validity_date | date:'mediumDate' }}
+                                                Valid Till: {{ getUploadedDoc(req.id!)?.validity_date |
+                                                date:'mediumDate' }}
                                             </div>
                                             }
                                         </div>
@@ -174,10 +175,38 @@
                                     <!-- VERIFICATION CONTROLS -->
                                     <div class="mt-4 pt-3 border-top">
                                         @if (getUploadedDoc(req.id!)?.verification_status === 'VERIFIED') {
+                                        <div class="row g-2 align-items-end mb-3">
+                                            <div class="col-md-8">
+                                                <label
+                                                    class="form-label small text-secondary fw-bold text-uppercase">Validation
+                                                    Date</label>
+                                                <input type="date" class="form-control"
+                                                    [ngModel]="validityDateUpdates.get(req.id!) || getFormatDate(getUploadedDoc(req.id!)?.validity_date)"
+                                                    (ngModelChange)="updateValidityDate(req.id!, $event)">
+                                            </div>
+                                            <div class="col-md-4">
+                                                <button class="btn btn-outline-success w-100 fw-bold"
+                                                    (click)="saveValidityDate(req.id!)">Update Date</button>
+                                            </div>
+                                        </div>
                                         <div class="row g-2">
                                             <div class="col-md-12">
-                                                <button class="btn btn-outline-primary w-100 fw-bold d-flex align-items-center justify-content-center gap-2" (click)="requestChangeDoc(req.id!)">
-                                                    <i-lucide name="refresh-cw" style="width: 16px;"></i-lucide> Change Document
+                                                <button
+                                                    class="btn btn-outline-primary w-100 fw-bold d-flex align-items-center justify-content-center gap-2"
+                                                    (click)="requestChangeDoc(req.id!)">
+                                                    <i-lucide name="refresh-cw" style="width: 16px;"></i-lucide> Change
+                                                    Document
+                                                </button>
+                                            </div>
+                                        </div>
+                                        } @else if (getUploadedDoc(req.id!)?.verification_status === 'REJECTED') {
+                                        <div class="row g-2">
+                                            <div class="col-md-12">
+                                                <button
+                                                    class="btn btn-outline-danger w-100 fw-bold d-flex align-items-center justify-content-center gap-2"
+                                                    (click)="requestChangeDoc(req.id!)">
+                                                    <i-lucide name="refresh-cw" style="width: 16px;"></i-lucide>
+                                                    Re-Upload Document
                                                 </button>
                                             </div>
                                         </div>
@@ -220,24 +249,34 @@
 
                                 <!-- CASE 2: SELECTED BUT NOT SAVED -->
                                 @else if (selectedFiles.has(req.id!)) {
-                                <div class="p-4 rounded-4 bg-primary-subtle border border-primary-subtle d-flex flex-column gap-3">
+                                <div
+                                    class="p-4 rounded-4 bg-primary-subtle border border-primary-subtle d-flex flex-column gap-3">
                                     <div class="d-flex justify-content-between align-items-center">
                                         <div class="d-flex align-items-center gap-3">
                                             <i-lucide name="file" class="text-primary" style="width: 32px;"></i-lucide>
                                             <div>
-                                                <div class="fw-bold text-primary">{{ selectedFiles.get(req.id!)?.name }}</div>
-                                                <div class="small text-secondary fw-bold text-uppercase">{{ (selectedFiles.get(req.id!)?.size || 0) / 1024 | number:'1.0-0' }} KB</div>
+                                                <div class="fw-bold text-primary">{{ selectedFiles.get(req.id!)?.name }}
+                                                </div>
+                                                <div class="small text-secondary fw-bold text-uppercase">{{
+                                                    (selectedFiles.get(req.id!)?.size || 0) / 1024 | number:'1.0-0' }}
+                                                    KB</div>
                                             </div>
                                         </div>
-                                        <button class="btn btn-link text-danger fw-bold text-decoration-none" (click)="cancelChangeDoc(req.id!)">Discard</button>
+                                        <button class="btn btn-link text-danger fw-bold text-decoration-none"
+                                            (click)="cancelChangeDoc(req.id!)">Discard</button>
                                     </div>
-                                    <div class="row align-items-end mt-2 pt-3 border-top border-primary border-opacity-25">
+                                    <div
+                                        class="row align-items-end mt-2 pt-3 border-top border-primary border-opacity-25">
                                         <div class="col-md-6">
-                                            <label class="form-label small text-primary fw-bold text-uppercase">Validity Date (Optional)</label>
-                                            <input type="date" class="form-control border-primary-subtle" [ngModel]="validityDateInputs.get(req.id!)" (ngModelChange)="validityDateInputs.set(req.id!, $event)">
+                                            <label class="form-label small text-primary fw-bold text-uppercase">Validity
+                                                Date (Optional)</label>
+                                            <input type="date" class="form-control border-primary-subtle"
+                                                [ngModel]="validityDateInputs.get(req.id!)"
+                                                (ngModelChange)="validityDateInputs.set(req.id!, $event)">
                                         </div>
                                         <div class="col-md-6 text-end">
-                                            <button class="btn btn-primary px-4 fw-bold shadow w-100" (click)="uploadSelectedFile(req.id!)" [disabled]="isUploading()">
+                                            <button class="btn btn-primary px-4 fw-bold shadow w-100"
+                                                (click)="uploadSelectedFile(req.id!)" [disabled]="isUploading()">
                                                 {{ isUploading() ? 'Processing...' : 'Save & Upload File' }}
                                             </button>
                                         </div>
@@ -258,7 +297,11 @@
                                         <div class="fw-bold text-secondary">Click to browse or Drag file here</div>
                                         <p class="small text-secondary mb-0">PDF, JPG, PNG allowed (Max 5MB)</p>
                                         @if (changeDocRequests.has(req.id!)) {
-                                        <button class="btn btn-sm btn-outline-secondary mt-3 position-relative z-index-2" style="z-index: 10;" (click)="$event.stopPropagation(); cancelChangeDoc(req.id!)">Cancel Update</button>
+                                        <button
+                                            class="btn btn-sm btn-outline-secondary mt-3 position-relative z-index-2"
+                                            style="z-index: 10;"
+                                            (click)="$event.stopPropagation(); cancelChangeDoc(req.id!)">Cancel
+                                            Update</button>
                                         }
                                     </div>
                                 </div>
