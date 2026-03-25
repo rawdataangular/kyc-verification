@@ -49,7 +49,7 @@ class UserDocumentSerializer(serializers.ModelSerializer):
             'id', 'user_detail', 'document_requirement', 'document_type_name', 
             'is_mandatory', 'document_value', 'file_upload', 'is_active', 
             'uploaded_at', 'validity_date', 'verification_status', 'verification_method', 
-            'is_verified', 'verified_at', 'verified_by'
+            'is_verified', 'verified_at', 'verified_by', 'remarks'
         ]
 
 class UserDetailSerializer(serializers.ModelSerializer):

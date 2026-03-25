@@ -138,6 +138,17 @@
                                     class="badge bg-light text-secondary px-3 py-2 fw-bold rounded-pill border">MISSING</span>
                                 }
                             </div>
+                            
+                            <!-- REMARKS DISPLAY -->
+                            @if (getUploadedDoc(req.id!)?.remarks) {
+                            <div class="mb-4 p-3 bg-danger bg-opacity-10 border border-danger-subtle rounded-3 d-flex align-items-start gap-2 text-danger">
+                                <i-lucide name="message-square" style="width: 18px; margin-top: 2px;"></i-lucide>
+                                <div>
+                                    <div class="fw-bold small mb-1">Verification Remarks</div>
+                                    <div class="small fw-medium">{{ getUploadedDoc(req.id!)?.remarks }}</div>
+                                </div>
+                            </div>
+                            }
 
                             <!-- ACTION ZONE -->
                             <div class="verification-action-container">
@@ -151,12 +162,13 @@
                                                 <a [href]="getDocUrl(getUploadedDoc(req.id!)?.file_upload)"
                                                     target="_blank"
                                                     class="btn btn-white btn-sm border fw-bold d-flex align-items-center gap-2">
-                                                    <i-lucide name="eye" style="width: 14px;"></i-lucide> Preview
+                                                    <i-lucide name="eye" style="width: 14px;"></i-lucide> &nbsp;Preview
                                                 </a>
                                                 <a [href]="getDocUrl(getUploadedDoc(req.id!)?.file_upload)"
                                                     [download]="getUploadedDoc(req.id!)?.file_upload"
                                                     class="btn btn-white btn-sm border fw-bold d-flex align-items-center gap-2">
-                                                    <i-lucide name="download" style="width: 14px;"></i-lucide> Download
+                                                    <i-lucide name="download" style="width: 14px;"></i-lucide>
+                                                    &nbsp;Download
                                                 </a>
                                             </div>
                                         </div>
@@ -212,24 +224,13 @@
                                         </div>
                                         } @else {
                                         <div class="row g-2">
-                                            <div class="col-md-6">
+                                            <div class="col-md-12">
                                                 <button
                                                     class="btn btn-primary w-100 fw-bold shadow-sm d-flex align-items-center justify-content-center gap-2"
-                                                    (click)="systemVerify(req.id!)"
-                                                    [disabled]="isSystemVerifying.get(req.id!)">
-                                                    <i-lucide [name]="isSystemVerifying.get(req.id!) ? 'loader' : 'cpu'"
-                                                        class="svg-spin" style="width: 16px;"></i-lucide>
-                                                    System Verification
+                                                    (click)="openVerificationModal(req.id!)">
+                                                    <i-lucide name="check-circle" style="width: 16px;"></i-lucide>
+                                                    Verify Document
                                                 </button>
-                                            </div>
-                                            <div class="col-md-3">
-                                                <button class="btn btn-success w-100 fw-bold text-white shadow-sm"
-                                                    (click)="verifyDoc(req.id!, 'VERIFIED', 'MANUAL')">Manual
-                                                    Approve</button>
-                                            </div>
-                                            <div class="col-md-3">
-                                                <button class="btn btn-outline-danger w-100 fw-bold"
-                                                    (click)="verifyDoc(req.id!, 'REJECTED', 'MANUAL')">Reject</button>
                                             </div>
                                         </div>
                                         }
@@ -328,6 +329,178 @@
         </div>
     </div>
 </div>
+
+<!-- Verification Modal -->
+@if (showVerificationModal && activeVerificationDoc) {
+<div class="modal fade show d-block" style="background: rgba(0,0,0,0.5);" tabindex="-1">
+    <div class="modal-dialog modal-xl modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg rounded-4 overflow-hidden">
+            <div class="modal-header border-bottom px-4 py-3 bg-light">
+                <div class="d-flex align-items-center gap-2">
+                    <i-lucide name="shield-check" class="text-primary" style="width: 24px;"></i-lucide>
+                    <h5 class="modal-title fw-bold text-dark mb-0">Document Verification</h5>
+                </div>
+                <button type="button" class="btn-close" (click)="closeVerificationModal()"></button>
+            </div>
+            <div class="modal-body p-0">
+                <div class="row g-0">
+                    <!-- Left: Document Preview -->
+                    <div class="col-lg-7 border-end bg-secondary bg-opacity-10 p-0 position-relative d-flex justify-content-center align-items-center" style="min-height: 600px;">
+                        @if (getSafeDocUrl(activeVerificationDoc.file_upload)) {
+                            @if (activeVerificationDoc.file_upload.toLowerCase().endsWith('.pdf')) {
+                                <iframe [src]="getSafeDocUrl(activeVerificationDoc.file_upload)" class="w-100 h-100 border-0" style="min-height: 600px; display: block;"></iframe>
+                            } @else {
+                                <img [src]="getSafeDocUrl(activeVerificationDoc.file_upload)" class="w-100 h-100 object-fit-contain" style="max-height: 85vh;">
+                            }
+                        } @else {
+                            <div class="d-flex flex-column align-items-center justify-content-center h-100 w-100 text-secondary">
+                                <i-lucide name="image-off" style="width: 48px; height: 48px;"></i-lucide>
+                                <span class="fw-bold mt-2">No Preview Available</span>
+                            </div>
+                        }
+                    </div>
+
+                    <!-- Right: Verification Controls -->
+                    <div class="col-lg-5 p-4 d-flex flex-column bg-white" style="max-height: 85vh; overflow-y: auto;">
+                        <h6 class="fw-bold mb-3 text-dark">Data Extraction</h6>
+                        
+                        <div class="mb-4">
+                            <label class="form-label small text-secondary fw-bold text-uppercase">Document Number <span class="text-danger">*</span></label>
+                            <div class="input-group shadow-sm">
+                                <input type="text" [(ngModel)]="documentNumber" class="form-control" placeholder="Enter doc number">
+                                <button class="btn btn-primary fw-bold d-flex align-items-center gap-2" (click)="runSystemOcr()" [disabled]="systemOcrStatus === 'LOADING'">
+                                    @if(systemOcrStatus === 'LOADING') {
+                                        <div class="spinner-border spinner-border-sm text-white" role="status"></div>
+                                    } @else {
+                                        <i-lucide name="scan-line" style="width: 16px;"></i-lucide>
+                                    }
+                                    OCR Fetch
+                                </button>
+                            </div>
+                            @if(systemOcrStatus === 'IDLE') {
+                                <div class="form-text small">Click OCR Fetch to extract document number automatically.</div>
+                            }
+                        </div>
+
+                        <div class="mb-4">
+                            <label class="form-label small text-secondary fw-bold text-uppercase">Verification Remarks</label>
+                            <textarea [(ngModel)]="verificationRemarks" class="form-control" rows="2" placeholder="Add remarks or reasons for rejecting a document"></textarea>
+                        </div>
+
+                        <h6 class="fw-bold mb-3 text-dark">Verification Method</h6>
+                        <!-- Mode Selection -->
+                        <div class="d-flex gap-2 mb-4 p-1 bg-light rounded-3 border flex-shrink-0">
+                            <button class="btn flex-fill fw-bold rounded-2 transition-all p-2" 
+                                [ngClass]="verificationMode === 'SYSTEM' ? 'btn-white shadow-sm border text-primary' : 'btn-link text-secondary text-decoration-none'"
+                                (click)="verificationMode = 'SYSTEM'">
+                                Online API Verification
+                            </button>
+                            <button class="btn flex-fill fw-bold rounded-2 transition-all p-2"
+                                [ngClass]="verificationMode === 'MANUAL' ? 'btn-white shadow-sm border text-success' : 'btn-link text-secondary text-decoration-none'"
+                                (click)="verificationMode = 'MANUAL'">
+                                Manual Review
+                            </button>
+                        </div>
+
+                        <!-- Mode Content -->
+                        <div class="flex-grow-1">
+                            @if (verificationMode === 'SYSTEM') {
+                                <div class="p-4 bg-light rounded-4 border mb-3 h-100 flex-column d-flex">
+                                    <h6 class="fw-bold fs-6 mb-3 d-flex align-items-center gap-2">
+                                        <i-lucide name="globe" style="width: 18px;" class="text-primary"></i-lucide> Verify Against Online Database
+                                    </h6>
+                                    
+                                    @if (apiVerificationStatus === 'SUCCESS') {
+                                        <div class="alert alert-success d-flex align-items-start gap-2 small mb-4 border-0 shadow-sm">
+                                            <i-lucide name="check-circle" style="width: 18px; flex-shrink: 0;" class="mt-1"></i-lucide> 
+                                            <div>
+                                                <strong class="d-block mb-1">API Data Retrieved Successfully</strong>
+                                                Please compare the API-returned data below with the document preview. If they match, approve the document.
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="bg-white p-3 rounded-3 border mb-4 shadow-sm flex-grow-1">
+                                            <div class="row g-3">
+                                                <div class="col-12 border-bottom pb-2">
+                                                    <label class="form-label small fw-bold text-secondary mb-1">Registered Name</label>
+                                                    <div class="fw-bold text-dark fs-5">{{ apiData?.name }}</div>
+                                                </div>
+                                                <div class="col-6">
+                                                    <label class="form-label small fw-bold text-secondary mb-1">API Valid Status</label>
+                                                    <div class="fw-bold text-success">{{ apiData?.status }}</div>
+                                                </div>
+                                                <div class="col-6">
+                                                    <label class="form-label small fw-bold text-secondary mb-1">Source / Provider</label>
+                                                    <div class="fw-bold text-dark">{{ apiData?.verified_by }}</div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="row g-2 pt-2">
+                                            <div class="col-6">
+                                                <button class="btn btn-success w-100 fw-bold shadow py-2 text-white"
+                                                    (click)="verifyActiveDoc('VERIFIED', 'PORTAL')">Matches - Approve</button>
+                                            </div>
+                                            <div class="col-6">
+                                                <button class="btn btn-danger w-100 fw-bold shadow py-2"
+                                                    (click)="verifyActiveDoc('REJECTED', 'PORTAL')">Mismatch - Reject</button>
+                                            </div>
+                                        </div>
+                                    } @else if (apiVerificationStatus === 'LOADING') {
+                                        <div class="text-center py-4 my-auto">
+                                            <div class="spinner-border text-primary" role="status">
+                                                <span class="visually-hidden">Loading...</span>
+                                            </div>
+                                            <p class="mt-3 text-secondary small fw-bold mb-0">Querying online database...</p>
+                                        </div>
+                                    } @else {
+                                        <div class="text-center p-4 my-auto text-secondary">
+                                            <i-lucide name="network" style="width: 42px; height: 42px;" class="mb-3 opacity-50"></i-lucide>
+                                            <p class="small mb-4 fw-medium">Ensure a Document Number is entered or extracted, then click below to query third-party APIs and compare the information.</p>
+                                            <button class="btn btn-primary w-100 fw-bold shadow py-2" (click)="runApiVerification()">
+                                                <i-lucide name="database" style="width: 16px;"></i-lucide> Fetch Online Data
+                                            </button>
+                                        </div>
+                                    }
+                                </div>
+                            } @else if (verificationMode === 'MANUAL') {
+                                <div class="p-4 bg-light rounded-4 border mb-3 text-center h-100 d-flex flex-column justify-content-center">
+                                    <div class="mb-3 d-inline-flex align-items-center justify-content-center bg-white rounded-circle shadow-sm" style="width: 48px; height: 48px;">
+                                        <i-lucide name="eye" class="text-secondary"></i-lucide>
+                                    </div>
+                                    <h6 class="fw-bold fs-6 mb-2">Manual Human Verification</h6>
+                                    <p class="small text-secondary mb-4">You are verifying this document manually. Carefully review the document preview to ensure it meets all requirements, then decide to approve or reject.</p>
+                                    
+                                    <div class="row g-2">
+                                        <div class="col-6">
+                                            <button class="btn btn-success w-100 fw-bold text-white shadow py-2 d-flex align-items-center justify-content-center gap-2"
+                                                (click)="verifyActiveDoc('VERIFIED', 'MANUAL')">
+                                                <i-lucide name="check" style="width: 18px;"></i-lucide> Approve
+                                            </button>
+                                        </div>
+                                        <div class="col-6">
+                                            <button class="btn btn-danger w-100 fw-bold shadow py-2 d-flex align-items-center justify-content-center gap-2"
+                                                (click)="verifyActiveDoc('REJECTED', 'MANUAL')">
+                                                <i-lucide name="x" style="width: 18px;"></i-lucide> Reject
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            } @else {
+                                <div class="p-5 text-center bg-light rounded-4 border border-dashed h-100 d-flex flex-column align-items-center justify-content-center mt-3" style="min-height: 250px;">
+                                    <i-lucide name="git-branch" class="text-secondary opacity-50 mb-3" style="width: 48px; height: 48px;"></i-lucide>
+                                    <h6 class="fw-bold text-secondary mb-1">Select A Verification Method</h6>
+                                    <p class="small text-secondary mb-0">Choose between querying an Online API to compare data or conducting a full manual review.</p>
+                                </div>
+                            }
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+}
 
 <style>
     .cursor-pointer {

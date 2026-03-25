@@ -2,6 +2,7 @@ import { Component, inject, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, RouterModule, Router } from '@angular/router';
+import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { LucideAngularModule } from 'lucide-angular';
 import { MasterDataService } from '../../core/services/master-data.service';
 import { UserDetail, CountryMaster, OfficeMaster, UserTypeMaster, DocumentRequirement, UserDocument } from '../../core/models/customer.model';
@@ -43,6 +44,19 @@ export class KycDetailComponent implements OnInit {
     systemVerificationLog: Map<number, string> = new Map();
     isSystemVerifying: Map<number, boolean> = new Map();
     validityDateUpdates: Map<number, string> = new Map();
+
+    showVerificationModal = false;
+    activeVerificationReqId: number | null = null;
+    activeVerificationDoc: UserDocument | undefined;
+    verificationMode: 'NONE' | 'MANUAL' | 'SYSTEM' = 'NONE';
+    systemOcrStatus: 'IDLE' | 'LOADING' | 'SUCCESS' | 'ERROR' = 'IDLE';
+    documentNumber: string = '';
+    ocrData: any = null;
+    verificationRemarks: string = '';
+    apiVerificationStatus: 'IDLE' | 'LOADING' | 'SUCCESS' | 'ERROR' = 'IDLE';
+    apiData: any = null;
+
+    private sanitizer = inject(DomSanitizer);
 
     ngOnInit() {
         this.masterDataService.countries$.subscribe(data => this.countries.set(data));
@@ -174,14 +188,91 @@ export class KycDetailComponent implements OnInit {
         this.selectedFiles.delete(requirementId);
     }
 
-    verifyDoc(requirementId: number, status: 'VERIFIED' | 'REJECTED', method: string) {
+    openVerificationModal(reqId: number) {
+        this.activeVerificationReqId = reqId;
+        this.activeVerificationDoc = this.getUploadedDoc(reqId);
+        this.showVerificationModal = true;
+        this.verificationMode = 'NONE';
+        this.systemOcrStatus = 'IDLE';
+        this.documentNumber = '';
+        this.ocrData = null;
+        this.verificationRemarks = this.activeVerificationDoc?.remarks || '';
+        this.apiVerificationStatus = 'IDLE';
+        this.apiData = null;
+    }
+
+    closeVerificationModal() {
+        this.showVerificationModal = false;
+        this.activeVerificationReqId = null;
+        this.activeVerificationDoc = undefined;
+        this.verificationMode = 'NONE';
+        this.systemOcrStatus = 'IDLE';
+        this.documentNumber = '';
+        this.ocrData = null;
+        this.verificationRemarks = '';
+        this.apiVerificationStatus = 'IDLE';
+        this.apiData = null;
+    }
+
+    getSafeDocUrl(url: string | undefined): SafeResourceUrl | string {
+        if (!url) return '';
+        const fullUrl = this.getDocUrl(url);
+        return this.sanitizer.bypassSecurityTrustResourceUrl(fullUrl);
+    }
+
+    runSystemOcr() {
+        this.systemOcrStatus = 'LOADING';
+        
+        // Mocking API call for OCR / System verification
+        setTimeout(() => {
+            this.systemOcrStatus = 'SUCCESS';
+            this.ocrData = {
+                number: this.documentNumber || `DOC-${Math.floor(Math.random() * 100000)}`,
+                name: this.user.name,
+                confidence: 94 + Math.floor(Math.random() * 5),
+                extracted_date: new Date().toISOString()
+            };
+            this.documentNumber = this.ocrData.number;
+        }, 2000);
+    }
+
+    runApiVerification() {
+        if (!this.documentNumber) {
+            alert('Please enter or extract a Document Number to query the API.');
+            return;
+        }
+        this.apiVerificationStatus = 'LOADING';
+        
+        // Mocking API call for Online Verification
+        setTimeout(() => {
+            this.apiVerificationStatus = 'SUCCESS';
+            this.apiData = {
+                name: this.user.name.toUpperCase() || 'REGISTERED ONLINE USER',
+                status: 'ACTIVE AND VALID',
+                issue_date: '2020-01-15',
+                verified_by: 'Gov. Service Provider API'
+            };
+        }, 1500);
+    }
+
+    verifyActiveDoc(status: 'VERIFIED' | 'REJECTED', method: string) {
+        if (this.activeVerificationReqId) {
+            this.verifyDoc(this.activeVerificationReqId, status, method, this.verificationRemarks);
+            this.closeVerificationModal();
+        }
+    }
+
+    verifyDoc(requirementId: number, status: 'VERIFIED' | 'REJECTED', method: string, remarks?: string) {
         const doc = this.getUploadedDoc(requirementId);
         if (doc && doc.id) {
-            const updateData = {
+            const updateData: any = {
                 verification_status: status,
                 verification_method: method as 'MANUAL' | 'PORTAL',
                 is_verified: status === 'VERIFIED'
             };
+            if (remarks !== undefined) {
+                updateData.remarks = remarks;
+            }
             this.masterDataService.verifyUserDocument(doc.id, updateData).subscribe(() => {
                 alert(`Verified as ${status} via ${method}`);
                 this.refreshUserData();

@@ -83,6 +83,7 @@ export interface UserDocument {
     verification_method?: 'MANUAL' | 'PORTAL';
     is_verified: boolean;
     verified_at?: string;
+    remarks?: string;
 }
 
 export interface UserDetail {

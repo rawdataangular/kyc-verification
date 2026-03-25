@@ -176,6 +176,7 @@ class UserDocument(models.Model):
     is_verified = models.BooleanField(default=False)
     verified_at = models.DateTimeField(null=True, blank=True)
     verified_by = models.ForeignKey(MasterUser, on_delete=models.SET_NULL, null=True, blank=True, related_name='verified_docs')
+    remarks = models.TextField(blank=True, null=True, help_text="Review remarks")
 
     class Meta:
         indexes = [models.Index(fields=['user_detail', 'is_active'])]
