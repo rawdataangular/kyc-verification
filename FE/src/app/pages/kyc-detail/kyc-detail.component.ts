@@ -1,10 +1,12 @@
 import { Component, inject, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { HttpClient } from '@angular/common/http';
 import { ActivatedRoute, RouterModule, Router } from '@angular/router';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { LucideAngularModule } from 'lucide-angular';
 import { MasterDataService } from '../../core/services/master-data.service';
+import { SurepassService } from '../../core/services/surepass.service';
 import { UserDetail, CountryMaster, OfficeMaster, UserTypeMaster, DocumentRequirement, UserDocument } from '../../core/models/customer.model';
 
 @Component({
@@ -17,6 +19,8 @@ export class KycDetailComponent implements OnInit {
     private route = inject(ActivatedRoute);
     private router = inject(Router);
     private masterDataService = inject(MasterDataService);
+    private surepassService = inject(SurepassService);
+    private http = inject(HttpClient);
 
     isEditMode = false;
 
@@ -233,26 +237,78 @@ export class KycDetailComponent implements OnInit {
                 extracted_date: new Date().toISOString()
             };
             this.documentNumber = this.ocrData.number;
+            this.onDocumentNumberChange();
         }, 2000);
     }
 
-    runApiVerification() {
+    onDocumentNumberChange() {
+        if (this.verificationMode === 'SYSTEM' && this.apiVerificationStatus !== 'IDLE') {
+            this.apiVerificationStatus = 'IDLE';
+            this.apiData = null;
+        }
+    }
+
+    retryApiVerification(documentType: string | undefined) {
+        this.apiVerificationStatus = 'IDLE';
+        this.apiData = null;
+        this.runApiVerification(documentType);
+    }
+
+    runApiVerification(documentType: string | undefined) {
         if (!this.documentNumber) {
             alert('Please enter or extract a Document Number to query the API.');
             return;
         }
+        if (!documentType) {
+            alert('Document Type is missing. Cannot verify online.');
+            return;
+        }
+
         this.apiVerificationStatus = 'LOADING';
-        
-        // Mocking API call for Online Verification
-        setTimeout(() => {
-            this.apiVerificationStatus = 'SUCCESS';
-            this.apiData = {
-                name: this.user.name.toUpperCase() || 'REGISTERED ONLINE USER',
-                status: 'ACTIVE AND VALID',
-                issue_date: '2020-01-15',
-                verified_by: 'Gov. Service Provider API'
-            };
-        }, 1500);
+console.log(documentType,this.documentNumber);
+
+        this.surepassService.verifyDocument(documentType, this.documentNumber).subscribe({
+            next: (res: any) => {
+                this.apiVerificationStatus = 'SUCCESS';
+                // Surepass typically returns data inside data, or directly in root
+                const data = res.data || res || {};
+                
+                if (res.success === false || data.status === 'invalid') {
+                    this.apiData = {
+                        name: '---',
+                        status: 'INVALID',
+                        message: res.message || data.message || 'Invalid Document Error',
+                        issue_date: '---',
+                        pan_number: this.documentNumber,
+                        verified_by: `${documentType} Govt Registry`
+                    };
+                } else {
+                    this.apiData = {
+                        name: data.full_name || data.name_on_card || data.client_id || 'REGISTERED ONLINE USER',
+                        status: 'ACTIVE AND VALID',
+                        message: res.message || 'Verification Successful',
+                        issue_date: data.dob || data.issue_date || 'N/A',
+                        pan_number: data.pan_number || data.id_number || this.documentNumber,
+                        verified_by: `${documentType} Govt Registry`
+                    };
+                }
+            },
+            error: (err) => {
+                console.warn('API call failed/rejected by Surepass.', err);
+                this.apiVerificationStatus = 'SUCCESS'; // Force UI to show the rejected info panel
+                
+                const errData = err.error || {};
+                
+                this.apiData = {
+                    name: '---',
+                    status: 'INVALID (HTTP Error)',
+                    message: errData.message || err.message || 'Verification Failed / Invalid Document',
+                    issue_date: '---',
+                    pan_number: this.documentNumber,
+                    verified_by: `${documentType} Govt Registry`
+                };
+            }
+        });
     }
 
     verifyActiveDoc(status: 'VERIFIED' | 'REJECTED', method: string) {

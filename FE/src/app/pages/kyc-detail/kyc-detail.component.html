@@ -367,7 +367,7 @@
                         <div class="mb-4">
                             <label class="form-label small text-secondary fw-bold text-uppercase">Document Number <span class="text-danger">*</span></label>
                             <div class="input-group shadow-sm">
-                                <input type="text" [(ngModel)]="documentNumber" class="form-control" placeholder="Enter doc number">
+                                <input type="text" [(ngModel)]="documentNumber" (ngModelChange)="onDocumentNumberChange()" class="form-control" placeholder="Enter doc number">
                                 <button class="btn btn-primary fw-bold d-flex align-items-center gap-2" (click)="runSystemOcr()" [disabled]="systemOcrStatus === 'LOADING'">
                                     @if(systemOcrStatus === 'LOADING') {
                                         <div class="spinner-border spinner-border-sm text-white" role="status"></div>
@@ -425,13 +425,23 @@
                                                     <label class="form-label small fw-bold text-secondary mb-1">Registered Name</label>
                                                     <div class="fw-bold text-dark fs-5">{{ apiData?.name }}</div>
                                                 </div>
-                                                <div class="col-6">
-                                                    <label class="form-label small fw-bold text-secondary mb-1">API Valid Status</label>
-                                                    <div class="fw-bold text-success">{{ apiData?.status }}</div>
+                                                <div class="col-12">
+                                                    <label class="form-label small fw-bold text-secondary mb-1">API Message / Status</label>
+                                                    <div class="fw-bold" [ngClass]="apiData?.status.includes('INVALID') ? 'text-danger' : 'text-success'">
+                                                        {{ apiData?.message || apiData?.status }}
+                                                    </div>
                                                 </div>
                                                 <div class="col-6">
+                                                    <label class="form-label small fw-bold text-secondary mb-1">Document Number</label>
+                                                    <div class="fw-bold text-dark">{{ apiData?.pan_number }}</div>
+                                                </div>
+                                                <div class="col-6">
+                                                    <label class="form-label small fw-bold text-secondary mb-1">DOB / Issue Date</label>
+                                                    <div class="fw-bold text-dark">{{ apiData?.issue_date }}</div>
+                                                </div>
+                                                <div class="col-12 border-top pt-2 mt-1">
                                                     <label class="form-label small fw-bold text-secondary mb-1">Source / Provider</label>
-                                                    <div class="fw-bold text-dark">{{ apiData?.verified_by }}</div>
+                                                    <div class="fw-bold text-secondary small">{{ apiData?.verified_by }}</div>
                                                 </div>
                                             </div>
                                         </div>
@@ -439,11 +449,18 @@
                                         <div class="row g-2 pt-2">
                                             <div class="col-6">
                                                 <button class="btn btn-success w-100 fw-bold shadow py-2 text-white"
+                                                    [disabled]="apiData?.status.includes('INVALID')"
                                                     (click)="verifyActiveDoc('VERIFIED', 'PORTAL')">Matches - Approve</button>
                                             </div>
                                             <div class="col-6">
                                                 <button class="btn btn-danger w-100 fw-bold shadow py-2"
                                                     (click)="verifyActiveDoc('REJECTED', 'PORTAL')">Mismatch - Reject</button>
+                                            </div>
+                                            <div class="col-12 mt-2">
+                                                <button class="btn btn-warning w-100 fw-bold shadow py-2 text-dark d-flex align-items-center justify-content-center gap-2"
+                                                    (click)="retryApiVerification(activeVerificationDoc.document_type_name)">
+                                                    <i-lucide name="refresh-cw" style="width: 16px;"></i-lucide> Refresh Verification Status
+                                                </button>
                                             </div>
                                         </div>
                                     } @else if (apiVerificationStatus === 'LOADING') {
@@ -457,7 +474,7 @@
                                         <div class="text-center p-4 my-auto text-secondary">
                                             <i-lucide name="network" style="width: 42px; height: 42px;" class="mb-3 opacity-50"></i-lucide>
                                             <p class="small mb-4 fw-medium">Ensure a Document Number is entered or extracted, then click below to query third-party APIs and compare the information.</p>
-                                            <button class="btn btn-primary w-100 fw-bold shadow py-2" (click)="runApiVerification()">
+                                            <button class="btn btn-primary w-100 fw-bold shadow py-2" (click)="runApiVerification(activeVerificationDoc.document_type_name)">
                                                 <i-lucide name="database" style="width: 16px;"></i-lucide> Fetch Online Data
                                             </button>
                                         </div>
